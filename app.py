@@ -3,6 +3,7 @@ import bcrypt
 import jwt
 import datetime
 import os
+import sys
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -16,10 +17,11 @@ SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
 # ------------------------------------------------------------------
 if os.environ.get('RENDER'):
     DATABASE = '/tmp/rental.db'
-    # Ensure the parent directory exists (tmp always does)
+    print("Running on Render, using database:", DATABASE, file=sys.stderr)
 else:
     DATABASE = 'data/rental.db'
     os.makedirs('data', exist_ok=True)
+    print("Running locally, using database:", DATABASE, file=sys.stderr)
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -27,6 +29,7 @@ def get_db():
     return conn
 
 def init_db():
+    """Create tables if they don't exist."""
     conn = get_db()
     conn.executescript('''
         CREATE TABLE IF NOT EXISTS users (
@@ -72,9 +75,23 @@ def init_db():
         );
     ''')
     conn.close()
+    print("Database initialized (tables created if missing)", file=sys.stderr)
 
-# Initialize database on app startup (important for gunicorn)
+# Initialize database when the app starts (important for gunicorn)
 init_db()
+
+# ------------------------------------------------------------------
+# Health check endpoint (to verify database)
+# ------------------------------------------------------------------
+@app.route('/health', methods=['GET'])
+def health():
+    try:
+        conn = get_db()
+        conn.execute('SELECT 1').fetchone()
+        conn.close()
+        return jsonify({'status': 'ok', 'database': DATABASE})
+    except Exception as e:
+        return jsonify({'status': 'error', 'error': str(e)}), 500
 
 # ------------------------------------------------------------------
 # Helper: token required & admin required decorators
