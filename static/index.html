@@ -9,224 +9,164 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: linear-gradient(135deg, #1f2b3a, #2c3e50, #1a2a3a); min-height: 100vh; padding: 20px; }
-        
-        /* Sticky header and footer */
-        .header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            padding: 20px 30px;  /* slightly reduced vertical padding */
-            text-align: center;
-        }
-        .footer {
-            position: sticky;
-            bottom: 0;
-            z-index: 100;
-            background: #0f172a;
-            color: #e2e8f0;
-            text-align: center;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            width: 100%;
-            background: white;
-            border-radius: 28px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            margin: 0 auto;
-            overflow: visible;
-            transition: all 0.3s;
-        }
-        /* ----- COMPRESSED SCROLLABLE AREA (reduced vertical spacing) ----- */
-        .form-container { padding: 15px 20px; }          /* was 30px */
-        .client-management { gap: 12px; margin-bottom: 15px; padding: 12px 15px; }
-        .client-info-section { gap: 12px; margin-bottom: 15px; padding: 12px 15px; }
-        .client-field { margin-bottom: 0; }
-        .import-export-section { margin: 10px 0; padding: 12px 15px; }
-        .import-export-grid { gap: 12px; }
-        table { margin: 10px 0; }
-        th, td { padding: 8px 10px; }                   /* reduced from 14px/12px */
-        .actions { margin: 15px 0 10px; gap: 8px; }
-        .btn { padding: 8px 16px; }                     /* slightly smaller buttons */
-        .comment-section { margin: 15px 0; padding: 12px; }
-        .comment-box { min-height: 60px; }
-        .form-footer { margin-top: 15px; gap: 15px; }
-        .signature-area { padding: 12px; }
-        .signature-line { padding: 20px 0 8px; }
-        .setup-form { padding: 15px; gap: 12px; }
-        .company-setup { padding: 12px 20px; }
-        .current-client-display { margin-bottom: 12px; padding: 8px; font-size: 0.85rem; }
-        .update-controls { top: 15px; right: 15px; }    /* keep out of way */
-        /* All other styles unchanged */
-        
-        .modal { display: flex; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index:2000; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 30px; border-radius: 24px; width:90%; max-width:500px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
-        .modal-content h2 { color: #1e3c72; margin-bottom:20px; text-align:center; }
-        .modal-content input { width:100%; padding:12px; margin:10px 0; border:2px solid #2563eb; border-radius:12px; font-size:16px; }
-        .modal-content button { width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; transition:0.2s; }
-        .modal-content button:hover { background:#1a3a8f; transform:translateY(-2px); }
-        .switch-mode { text-align:center; margin-top:15px; color:#2563eb; cursor:pointer; }
-        .error-msg { color:#dc2626; text-align:center; margin-top:10px; font-size:14px; }
-        #mainApp { display: none; }
-        .company-name { font-size: 28px; font-weight: 800; }
-        .company-details { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 10px; gap: 8px; }
-        .detail-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 40px; font-size: 0.9rem; }
-        .company-setup { background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
-        .setup-header { display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
-        .setup-toggle { background:#2563eb; color:white; padding:6px 16px; border-radius:40px; border:none; cursor:pointer; font-weight:600; transition:0.2s; font-size:0.85rem; }
-        .setup-form { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:12px; background:white; padding:15px; border-radius:20px; margin-top:8px; display:none; box-shadow:0 2px 6px rgba(0,0,0,0.05); }
-        .setup-field label { font-weight:600; display:block; margin-bottom:4px; color:#1e293b; font-size:0.85rem; }
-        .setup-input { width:100%; padding:8px 12px; border:2px solid #cbd5e1; border-radius:12px; }
-        .client-management { display: flex; justify-content: space-between; flex-wrap: wrap; background: #f1f5f9; border-radius: 16px; }
-        .client-selector { flex:2; min-width:240px; }
-        .client-dropdown { width:100%; padding:10px; border:2px solid #2563eb; border-radius:12px; background:white; font-size:14px; }
-        .client-actions { display: flex; gap:8px; flex-wrap:wrap; }
-        .client-info-section { display: flex; flex-wrap: wrap; background: white; border-radius: 16px; box-shadow:0 1px 4px rgba(0,0,0,0.03); }
-        .client-field label { font-weight:600; display:block; margin-bottom:4px; color:#1e293b; font-size:0.85rem; }
-        .underline-input { border:none; border-bottom:2px solid #2563eb; padding:6px 4px; width:100%; background:transparent; font-size:14px; transition:0.2s; }
-        .underline-input:focus { outline:none; border-bottom-color:#f59e0b; }
-        table { width:100%; border-collapse:collapse; border-radius:16px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05); }
-        th { background:#1e40af; color:white; padding:10px 8px; font-weight:600; font-size:0.85rem; }
+        .header { position: sticky; top: 0; z-index: 100; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 20px 30px; text-align: center; }
+        .footer { position: sticky; bottom: 0; z-index: 100; background: #0f172a; color: #e2e8f0; text-align: center; padding: 15px; margin-top: 15px; border-radius: 20px; }
+        .container { max-width: 1400px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); margin: 0 auto; overflow: visible; }
+        .form-container { padding: 15px 20px; }
+        .client-management { gap: 12px; margin-bottom: 15px; padding: 12px 15px; background: #f1f5f9; border-radius: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; }
+        .client-info-section { gap: 12px; margin-bottom: 15px; padding: 12px 15px; background: white; border-radius: 16px; display: flex; flex-wrap: wrap; }
+        .client-field { flex:1; min-width:200px; }
+        .client-field label { font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem; }
+        .underline-input { border:none; border-bottom:2px solid #2563eb; padding:6px 4px; width:100%; background:transparent; }
+        .import-export-section { margin: 10px 0; padding: 12px 15px; background:#f1f5f9; border-radius:16px; border:1px dashed #2563eb; }
+        .import-export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        table { width:100%; border-collapse:collapse; margin:10px 0; border-radius:16px; overflow:hidden; }
+        th { background:#1e40af; color:white; padding:10px 8px; font-weight:600; }
         td { padding:8px; border-bottom:1px solid #e2e8f0; background:white; position:relative; }
         tr:hover td { background:#fef9e3; }
-        .delete-row-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%); background:#ef4444; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; opacity:0; transition:0.2s; display:flex; align-items:center; justify-content:center; font-size:0.7rem; }
+        .delete-row-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%); background:#ef4444; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; opacity:0; display:flex; align-items:center; justify-content:center; }
         tr:hover .delete-row-btn { opacity:1; }
-        input, select { width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.85rem; }
+        input, select { width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:8px; }
         .total-row { background:#e6f0ff; font-weight:700; }
-        .actions { display: flex; justify-content: space-between; flex-wrap: wrap; }
+        .actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap:8px; margin:15px 0 10px; }
         .btn { padding:6px 12px; border-radius:40px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:0.2s; flex:1 0 auto; justify-content:center; font-size:0.85rem; }
         .btn-primary { background:#2563eb; color:white; }
-        .btn-primary:hover { background:#1e40af; transform:translateY(-1px); }
         .btn-secondary { background:#10b981; color:white; }
         .btn-warning { background:#f59e0b; color:white; }
         .btn-danger { background:#ef4444; color:white; }
         .btn-outline { background:white; color:#2563eb; border:2px solid #2563eb; }
-        .btn-small { padding: 3px 8px; font-size: 11px; margin: 1px; }
-        .comment-section { background:#fef9e3; border-radius:16px; border-left:4px solid #f59e0b; }
-        .comment-box { width:100%; min-height:60px; padding:10px; border:1px solid #e2e8f0; border-radius:12px; font-size:0.85rem; }
-        .form-footer { display: flex; justify-content: space-between; }
-        .signature-area { flex:1; text-align:center; background:#faf9fe; padding:12px; border-radius:16px; font-size:0.85rem; }
+        .btn-small { padding: 3px 8px; font-size: 11px; margin: 2px; }
+        .comment-section { margin: 15px 0; padding: 12px; background:#fef9e3; border-radius:16px; border-left:4px solid #f59e0b; }
+        .comment-box { width:100%; min-height:60px; padding:10px; border:1px solid #e2e8f0; border-radius:12px; }
+        .form-footer { display: flex; justify-content: space-between; margin-top:15px; gap:15px; }
+        .signature-area { flex:1; text-align:center; background:#faf9fe; padding:12px; border-radius:16px; }
         .signature-line { border-bottom:2px solid #2563eb; padding:20px 0 6px; margin-top:8px; }
-        .save-indicator { position:fixed; bottom:20px; right:20px; background:#10b981; color:white; padding:8px 16px; border-radius:40px; display:none; z-index:1000; font-weight:600; box-shadow:0 2px 8px rgba(0,0,0,0.2); font-size:0.85rem; }
+        .save-indicator { position:fixed; bottom:20px; right:20px; background:#10b981; color:white; padding:8px 16px; border-radius:40px; display:none; z-index:1000; font-weight:600; }
         .update-controls { position:fixed; top:15px; right:15px; z-index:1000; display: flex; gap: 8px; align-items: center; }
         .dropdown { position:relative; display:inline-block; }
-        .dropdown-btn { background:#8b5cf6; color:white; border:none; padding:6px 14px; border-radius:40px; cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600; font-size:0.85rem; }
+        .dropdown-btn { background:#8b5cf6; color:white; border:none; padding:6px 14px; border-radius:40px; cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600; }
         .dropdown-content { display:none; position:absolute; right:0; background:white; min-width:200px; box-shadow:0 8px 20px rgba(0,0,0,0.1); border-radius:12px; overflow:hidden; z-index:1001; }
-        .dropdown-content a { padding:10px 14px; text-decoration:none; display:flex; align-items:center; gap:8px; cursor:pointer; border-bottom:1px solid #f1f5f9; color:#1e293b; font-size:0.85rem; }
+        .dropdown-content a { padding:10px 14px; text-decoration:none; display:flex; align-items:center; gap:8px; cursor:pointer; border-bottom:1px solid #f1f5f9; color:#1e293b; }
         .dropdown-content a:hover { background:#f1f5f9; }
         .dropdown:hover .dropdown-content { display:block; }
-        .current-client-display { background:#e0f2fe; border-radius:40px; text-align:center; font-weight:600; }
-        .import-export-section { background:#f1f5f9; border-radius:16px; border:1px dashed #2563eb; }
-        .import-export-grid { display: grid; grid-template-columns: 1fr 1fr; gap:12px; }
+        .current-client-display { background:#e0f2fe; padding:8px; border-radius:40px; margin-bottom:12px; text-align:center; font-weight:600; font-size:0.85rem; }
+        .modal { display: flex; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index:2000; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 24px; width:90%; max-width:500px; position: relative; }
+        .modal-content h2 { color: #1e3c72; margin-bottom:20px; text-align:center; }
+        .modal-content input { width:100%; padding:12px; margin:10px 0; border:2px solid #2563eb; border-radius:12px; font-size:16px; padding-right: 40px; }
+        .modal-content button { width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; }
+        .password-wrapper { position: relative; width: 100%; }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #2563eb; background: white; padding: 4px; border-radius: 50%; }
+        .switch-mode { text-align:center; margin-top:15px; color:#2563eb; cursor:pointer; }
+        .error-msg { color:#dc2626; text-align:center; margin-top:10px; }
+        #mainApp { display: none; }
+        .company-name { font-size: 28px; font-weight: 800; }
+        .company-details { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 10px; gap: 8px; }
+        .detail-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 40px; }
+        .company-setup { background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; }
+        .setup-header { display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+        .setup-toggle { background:#2563eb; color:white; padding:6px 16px; border-radius:40px; border:none; cursor:pointer; font-weight:600; }
+        .setup-form { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:12px; background:white; padding:15px; border-radius:20px; margin-top:8px; display:none; }
+        .setup-field label { font-weight:600; display:block; margin-bottom:4px; }
+        .setup-input { width:100%; padding:8px 12px; border:2px solid #cbd5e1; border-radius:12px; }
+        .client-selector { flex:2; min-width:240px; }
+        .client-dropdown { width:100%; padding:10px; border:2px solid #2563eb; border-radius:12px; background:white; }
         .tooltip-icon { border-bottom: 1px dashed #2563eb; cursor: help; }
-        @media print { .no-print { display:none !important; } body { background:white; } .container { margin:0; box-shadow:none; } .header, .footer { position: static; } }
-        @media (max-width:800px) { .import-export-grid { grid-template-columns:1fr; } .actions { flex-direction: column; } .client-management { flex-direction:column; } .top-bar { justify-content: center; } }
+        @media print { .no-print { display:none !important; } body { background:white; } .header, .footer { position: static; } }
+        @media (max-width:800px) { .import-export-grid { grid-template-columns:1fr; } .actions { flex-direction: column; } }
     </style>
 </head>
 <body>
-
-<!-- Login Modal -->
 <div id="loginModal" class="modal">
     <div class="modal-content">
-        <h2><i class="fas fa-cog"></i> Equipment Rental Pro</h2>
-        <div id="authError" class="error-msg"></div>
+        <h2>Equipment Rental Pro</h2>
+        <div id="authError"></div>
         <input type="email" id="loginEmail" placeholder="Email">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+        <div class="password-wrapper">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+        </div>
+        <button id="loginBtn">Login</button>
         <div class="switch-mode" id="showRegister">Create an account</div>
     </div>
 </div>
-
-<!-- Admin User Management Modal -->
 <div id="adminModal" class="modal" style="display:none;">
     <div class="modal-content" style="max-width:700px;">
-        <h2><i class="fas fa-users-cog"></i> Admin Dashboard</h2>
+        <h2>Admin Dashboard</h2>
         <div id="userListContainer" style="max-height:400px; overflow-y:auto;"></div>
         <button id="closeAdminModal" class="btn btn-primary" style="margin-top:20px;">Close</button>
     </div>
 </div>
-
 <div id="mainApp">
     <div class="save-indicator" id="saveIndicator">Saved!</div>
     <div class="update-controls no-print">
-        <button class="top-btn" id="adminDashboardBtn" style="display:none;"><i class="fas fa-users-cog"></i> Admin</button>
-        <button class="top-btn" id="changePasswordBtn"><i class="fas fa-key"></i> Change Pwd</button>
-        <button class="top-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        <button class="top-btn" id="adminDashboardBtn" style="display:none;">Admin</button>
+        <button class="top-btn" id="changePasswordBtn">Change Pwd</button>
+        <button class="top-btn" id="logoutBtn">Logout</button>
         <div class="dropdown">
-            <button class="dropdown-btn"><i class="fas fa-sync-alt"></i> Update <i class="fas fa-chevron-down"></i></button>
+            <button class="dropdown-btn">Update</button>
             <div class="dropdown-content">
-                <a onclick="exportToMaster()"><i class="fas fa-upload"></i> Export Master DB</a>
-                <a onclick="importFromClients()"><i class="fas fa-download"></i> Import Client Updates</a>
-                <a onclick="createClientCopy()"><i class="fas fa-copy"></i> Create Client Copy</a>
-                <a onclick="backupAllData()"><i class="fas fa-database"></i> Backup All Data</a>
+                <a onclick="exportToMaster()">Export Master DB</a>
+                <a onclick="importFromClients()">Import Client Updates</a>
+                <a onclick="createClientCopy()">Create Client Copy</a>
+                <a onclick="backupAllData()">Backup All Data</a>
             </div>
         </div>
     </div>
-
     <div class="container">
         <div class="header">
             <h1 class="company-name" id="companyNameDisplay">Equipment Rental Manager Pro</h1>
             <div class="company-details">
-                <div class="detail-item"><i class="fas fa-map-marker-alt"></i><span id="addressDisplay"></span></div>
-                <div class="detail-item"><i class="fas fa-phone"></i><span id="phoneDisplay"></span></div>
-                <div class="detail-item"><i class="fas fa-envelope"></i><span id="emailDisplay"></span></div>
+                <div class="detail-item"><span id="addressDisplay"></span></div>
+                <div class="detail-item"><span id="phoneDisplay"></span></div>
+                <div class="detail-item"><span id="emailDisplay"></span></div>
             </div>
         </div>
-
         <div class="company-setup no-print">
-            <div class="setup-header"><h3><i class="fas fa-cog"></i> Company & Tax Setup</h3><button class="setup-toggle" onclick="toggleSetupForm()"><i class="fas fa-edit"></i> Edit</button></div>
+            <div class="setup-header"><h3>Company & Tax Setup</h3><button class="setup-toggle" onclick="toggleSetupForm()">Edit</button></div>
             <div class="setup-form" id="setupForm">
                 <div class="setup-field"><label>Company Name</label><input type="text" id="companyName" class="setup-input"></div>
                 <div class="setup-field"><label>Telephone</label><input type="text" id="companyPhone" class="setup-input"></div>
                 <div class="setup-field"><label>Address</label><input type="text" id="companyAddress" class="setup-input"></div>
                 <div class="setup-field"><label>Email</label><input type="text" id="companyEmail" class="setup-input"></div>
-                <div class="setup-field"><label><i class="fas fa-percent"></i> Tax Rate (%)</label><input type="number" step="0.1" id="taxRate" class="setup-input" value="16"></div>
-                <div class="setup-field" style="grid-column:span 2"><button class="btn btn-secondary" onclick="saveCompanyDetails()"><i class="fas fa-save"></i> Save Settings</button></div>
+                <div class="setup-field"><label>Tax Rate (%)</label><input type="number" step="0.1" id="taxRate" class="setup-input" value="0"></div>
+                <div class="setup-field" style="grid-column:span 2"><button class="btn btn-secondary" onclick="saveCompanyDetails()">Save Settings</button></div>
             </div>
         </div>
-
         <div class="form-container">
             <div class="current-client-display no-print" id="currentClientDisplay">No client selected</div>
             <div class="client-management no-print">
-                <div class="client-selector"><label>Select Client</label><select id="clientDropdown" class="client-dropdown" onchange="loadClient()"><option value="">-- Select Client --</option></select></div>
-                <div class="client-actions"><button class="btn btn-primary" onclick="addNewClient()"><i class="fas fa-plus"></i> New Client</button><button class="btn btn-warning" onclick="saveCurrentClient()"><i class="fas fa-save"></i> Save</button><button class="btn btn-danger" onclick="deleteCurrentClient()"><i class="fas fa-trash"></i> Delete</button></div>
+                <div class="client-selector"><select id="clientDropdown" class="client-dropdown" onchange="loadClient()"><option value="">-- Select Client --</option></select></div>
+                <div class="client-actions"><button class="btn btn-primary" onclick="addNewClient()">New Client</button><button class="btn btn-warning" onclick="saveCurrentClient()">Save</button><button class="btn btn-danger" onclick="deleteCurrentClient()">Delete</button></div>
             </div>
-
             <div class="client-info-section">
                 <div class="client-field"><label>M/S (Client/Company)</label><input type="text" id="clientName" class="underline-input" placeholder="Client name"></div>
                 <div class="client-field"><label>Telephone</label><input type="text" id="clientPhone" class="underline-input"></div>
                 <div class="client-field"><label>Email</label><input type="text" id="clientEmail" class="underline-input"></div>
                 <div class="client-field"><label>P.O. Box/Address</label><input type="text" id="clientPOB" class="underline-input"></div>
             </div>
-
             <div class="import-export-section no-print">
-                <h4><i class="fas fa-exchange-alt"></i> Import/Export Items</h4>
+                <h4>Import/Export Items</h4>
                 <div class="import-export-grid">
-                    <div><h5><i class="fas fa-file-import"></i> Import</h5><button class="btn btn-outline" onclick="document.getElementById('fileInput').click()"><i class="fas fa-upload"></i> Choose CSV/Excel</button><input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(this)"> <button class="btn btn-outline" onclick="importSampleCSV()">Sample CSV</button></div>
-                    <div><h5><i class="fas fa-file-export"></i> Export</h5><button class="btn btn-outline" onclick="exportToCSV()">CSV</button> <button class="btn btn-outline" onclick="exportToExcel()">Excel</button> <button class="btn btn-outline" onclick="exportToJSON()">JSON</button> <button class="btn btn-outline" onclick="showTaxHistory()"><i class="fas fa-history"></i> Tax History</button></div>
+                    <div><button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">Choose CSV/Excel</button><input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(this)"> <button class="btn btn-outline" onclick="importSampleCSV()">Sample CSV</button></div>
+                    <div><button class="btn btn-outline" onclick="exportToCSV()">CSV</button> <button class="btn btn-outline" onclick="exportToExcel()">Excel</button> <button class="btn btn-outline" onclick="exportToJSON()">JSON</button> <button class="btn btn-outline" onclick="showTaxHistory()">Tax History</button></div>
                 </div>
             </div>
-
             <table id="rentalTable">
-                <thead><tr><th>Description</th><th>Date Issued</th><th>Cost/Day (KES)</th><th>Days</th><th>Total Cost (KES)</th><th class="tooltip-icon" title="Tax = Total × Tax% | Hover for Net">Tax (KES) <i class="fas fa-info-circle"></i></th><th>Amount Paid (KES)</th><th>Balance (KES)</th><th style="width:40px"></th></tr></thead>
+                <thead><tr><th>Description</th><th>Date Issued</th><th>Cost/Day</th><th>Days</th><th>Total Cost</th><th class="tooltip-icon">Tax</th><th>Amount Paid</th><th>Balance</th><th></th></tr></thead>
                 <tbody id="rentalTableBody"></tbody>
-                <tfoot><tr class="total-row"><td colspan="4" style="text-align:right">GRAND TOTAL:</td><td id="grandTotal">0.00</td><td id="grandTax">0.00</td><td id="grandPaid">0.00</td><td id="grandBalance">0.00</td><td></tr></tfoot>
-            </table>
-
+                <tfoot><tr class="total-row"><td colspan="4">GRAND TOTAL:</td><td id="grandTotal">0.00</td><td id="grandTax">0.00</td><td id="grandPaid">0.00</td><td id="grandBalance">0.00</td><td></td></tr>
+                </tfoot>
+             </table>
             <div class="actions no-print">
-                <button class="btn btn-primary" onclick="addNewRow()"><i class="fas fa-plus-circle"></i> Add Item</button>
-                <button class="btn btn-secondary" onclick="calculateAll()"><i class="fas fa-calculator"></i> Calculate All</button>
-                <button class="btn btn-success" onclick="saveCurrentClient()"><i class="fas fa-save"></i> Save Client</button>
-                <button class="btn btn-outline" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
-                <button class="btn btn-outline" onclick="saveAsPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
-                <button class="btn btn-warning" onclick="clearCurrentForm()"><i class="fas fa-trash-alt"></i> Clear</button>
+                <button class="btn btn-primary" onclick="addNewRow()">Add Item</button>
+                <button class="btn btn-secondary" onclick="calculateAll()">Calculate All</button>
+                <button class="btn btn-success" onclick="saveCurrentClient()">Save Client</button>
+                <button class="btn btn-outline" onclick="window.print()">Print</button>
+                <button class="btn btn-outline" onclick="saveAsPDF()">PDF</button>
+                <button class="btn btn-warning" onclick="clearCurrentForm()">Clear</button>
             </div>
-
-            <div class="comment-section"><h4><i class="fas fa-comment"></i> Notes to Client</h4><textarea id="clientComment" class="comment-box" placeholder="Additional notes..."></textarea></div>
+            <div class="comment-section"><textarea id="clientComment" class="comment-box" placeholder="Additional notes..."></textarea></div>
             <div class="form-footer">
                 <div class="signature-area">Client's Signature<div class="signature-line"></div></div>
                 <div class="signature-area"><div id="companySignatureName"></div><div class="signature-line"></div></div>
@@ -234,20 +174,26 @@
         </div>
     </div>
     <div class="footer no-print">
-        <p>&copy; 2026 Safari Softwares. All rights reserved.</p>
-        <div class="contact-info"><i class="fas fa-envelope"></i> safarisoftwares@gmail.com &nbsp;|&nbsp; <i class="fab fa-whatsapp"></i> +254112168732</div>
+        <p>© 2026 Safari Softwares. All rights reserved.</p>
+        <div>safarisoftwares@gmail.com | +254112168732</div>
         <div><a href="#" onclick="showPrivacy()">Privacy Policy</a> | <a href="#" onclick="showTerms()">Terms of Use</a></div>
     </div>
 </div>
-
 <script>
-// (The JavaScript is identical to the original, nothing changed)
 const API_BASE = window.location.origin;
 let token = localStorage.getItem('token');
 let currentClientId = null;
 let autoSaveTimeout = null;
 let currentUserRole = null;
 let currentUserEmail = '';
+
+// Password toggle functionality
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('loginPassword');
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye-slash');
+});
 
 async function apiCall(endpoint, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
@@ -303,21 +249,12 @@ document.getElementById('adminDashboardBtn').onclick = async () => {
     try {
         const data = await apiCall('/api/admin/users');
         const container = document.getElementById('userListContainer');
-        let html = '<table style="width:100%; border-collapse:collapse;">';
-        html += '<tr><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr>';
+        let html = '<table style="width:100%; border-collapse:collapse;"><tr><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr>';
         for (const user of data.users) {
-            html += `<tr>
-                <td>${escapeHtml(user.email)}</td>
-                <td>${user.role}</td>
-                <td>${user.is_active ? 'Active' : 'Suspended'}</td>
-                <td>
-                    <button class="btn btn-small" onclick="adminResetPassword('${user.email}', ${user.id})">Reset Pass</button>
-                    ${user.is_active ? 
-                        `<button class="btn btn-small btn-danger" onclick="adminSuspendUser(${user.id}, '${user.email}')">Suspend</button>` :
-                        `<button class="btn btn-small btn-success" onclick="adminActivateUser(${user.id}, '${user.email}')">Activate</button>`
-                    }
-                 </td>
-            </tr>`;
+            html += `<tr><td>${escapeHtml(user.email)}</td><td>${user.role}</td><td>${user.is_active ? 'Active' : 'Suspended'}</td>
+            <td><button class="btn btn-small" onclick="adminResetPassword('${user.email}', ${user.id})">Reset Pass</button>
+            ${user.is_active ? `<button class="btn btn-small btn-danger" onclick="adminSuspendUser(${user.id}, '${user.email}')">Suspend</button>` : `<button class="btn btn-small btn-success" onclick="adminActivateUser(${user.id}, '${user.email}')">Activate</button>`}
+            </td></tr>`;
         }
         html += '</table>';
         container.innerHTML = html;
@@ -345,7 +282,7 @@ window.adminActivateUser = async (userId, email) => {
 };
 document.getElementById('closeAdminModal').onclick = () => { document.getElementById('adminModal').style.display = 'none'; };
 
-async function loadCompanyFromUser() { try { const data = await apiCall('/api/auth/verify'); const u = data.user; currentUserEmail = u.email; document.getElementById('companyNameDisplay').innerText = u.company_name || 'Equipment Rental Manager Pro'; document.getElementById('phoneDisplay').innerText = u.company_phone || 'Tel: ...'; document.getElementById('addressDisplay').innerText = u.company_address || 'P. O. Box ...'; document.getElementById('emailDisplay').innerText = u.company_email || '...'; document.getElementById('companySignatureName').innerText = u.signature_name || u.company_name || 'Your Company'; document.getElementById('companyName').value = u.company_name || ''; document.getElementById('companyPhone').value = (u.company_phone || '').replace('Tel: ', ''); document.getElementById('companyAddress').value = u.company_address || ''; document.getElementById('companyEmail').value = u.company_email || ''; document.getElementById('taxRate').value = u.tax_rate || 16; } catch(e){ console.error(e); } }
+async function loadCompanyFromUser() { try { const data = await apiCall('/api/auth/verify'); const u = data.user; currentUserEmail = u.email; document.getElementById('companyNameDisplay').innerText = u.company_name || 'Equipment Rental Manager Pro'; document.getElementById('phoneDisplay').innerText = u.company_phone || 'Tel: ...'; document.getElementById('addressDisplay').innerText = u.company_address || 'P. O. Box ...'; document.getElementById('emailDisplay').innerText = u.company_email || '...'; document.getElementById('companySignatureName').innerText = u.signature_name || u.company_name || 'Your Company'; document.getElementById('companyName').value = u.company_name || ''; document.getElementById('companyPhone').value = (u.company_phone || '').replace('Tel: ', ''); document.getElementById('companyAddress').value = u.company_address || ''; document.getElementById('companyEmail').value = u.company_email || ''; document.getElementById('taxRate').value = u.tax_rate || 0; } catch(e){ console.error(e); } }
 async function saveCompanyDetails() { await apiCall('/api/company', { method:'PUT', body: JSON.stringify({ company_name: document.getElementById('companyName').value, company_phone: document.getElementById('companyPhone').value, company_address: document.getElementById('companyAddress').value, company_email: document.getElementById('companyEmail').value, signature_name: document.getElementById('companyName').value, tax_rate: parseFloat(document.getElementById('taxRate').value) || 0 }) }); await loadCompanyFromUser(); toggleSetupForm(); showSaveIndicator('Company & Tax saved'); }
 function toggleSetupForm() { const f=document.getElementById('setupForm'); f.style.display = f.style.display==='none'?'grid':'none'; }
 async function loadClientDropdown() { const data = await apiCall('/api/clients'); const dropdown = document.getElementById('clientDropdown'); dropdown.innerHTML = '<option value="">-- Select Client --</option>'; for (const c of data.clients) { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = `${c.client_name} (${c.client_phone || 'no phone'})`; dropdown.appendChild(opt); } }
@@ -356,8 +293,8 @@ function addNewRow() { const tbody = document.getElementById('rentalTableBody');
 async function calculateRow(row) { const cost = parseFloat(row.querySelector('.cost-per-day').value) || 0; const days = parseInt(row.querySelector('.days-issued').value) || 0; const paid = parseFloat(row.querySelector('.amount-paid').value) || 0; const total = cost * days; row.querySelector('.total-cost').value = total.toFixed(2); let taxRate = parseFloat(document.getElementById('taxRate').value) || 0; const taxAmount = total * taxRate / 100; const netAmount = total - taxAmount; const taxCell = row.querySelector('.tax-amount'); taxCell.value = taxAmount.toFixed(2); taxCell.title = `Tax: ${taxAmount.toFixed(2)} KES | Net: ${netAmount.toFixed(2)} KES`; const balance = total - paid; row.querySelector('.balance').value = balance.toFixed(2); updateGrandTotals(); }
 function calculateAll() { document.querySelectorAll('#rentalTableBody tr').forEach(r => calculateRow(r)); }
 function updateGrandTotals() { let total=0, tax=0, paid=0, bal=0; document.querySelectorAll('#rentalTableBody tr').forEach(r => { total += parseFloat(r.querySelector('.total-cost').value) || 0; tax += parseFloat(r.querySelector('.tax-amount').value) || 0; paid += parseFloat(r.querySelector('.amount-paid').value) || 0; bal += parseFloat(r.querySelector('.balance').value) || 0; }); document.getElementById('grandTotal').innerText = total.toFixed(2); document.getElementById('grandTax').innerText = tax.toFixed(2); document.getElementById('grandPaid').innerText = paid.toFixed(2); document.getElementById('grandBalance').innerText = bal.toFixed(2); }
-async function saveCurrentClient() { const name = document.getElementById('clientName').value.trim(); if (!name) { alert('Client name required'); return; } if (!currentClientId) { const newClient = await apiCall('/api/clients', { method:'POST', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) }); currentClientId = newClient.id; await loadClientDropdown(); document.getElementById('clientDropdown').value = currentClientId; } else { await apiCall(`/api/clients/${currentClientId}`, { method:'PUT', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) }); } const items = []; document.querySelectorAll('#rentalTableBody tr').forEach(row => { items.push({ description: row.querySelector('.item-description').value, date_issued: row.querySelector('.date-issued').value, cost_per_day: parseFloat(row.querySelector('.cost-per-day').value) || 0, days_issued: parseInt(row.querySelector('.days-issued').value) || 1, amount_paid: parseFloat(row.querySelector('.amount-paid').value) || 0 }); }); await apiCall(`/api/clients/${currentClientId}/items/bulk`, { method:'PUT', body: JSON.stringify({ items }) }); showSaveIndicator('Client saved'); await loadClientDropdown(); }
-function autoSaveCurrentClient() { if (!currentClientId) return; if (autoSaveTimeout) clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => saveCurrentClient(), 1500); }
+async function saveCurrentClient(showNotification = true) { const name = document.getElementById('clientName').value.trim(); if (!name) { if (showNotification) alert('Client name required'); return false; } if (!currentClientId) { const newClient = await apiCall('/api/clients', { method:'POST', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) }); currentClientId = newClient.id; await loadClientDropdown(); document.getElementById('clientDropdown').value = currentClientId; } else { await apiCall(`/api/clients/${currentClientId}`, { method:'PUT', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) }); } const items = []; document.querySelectorAll('#rentalTableBody tr').forEach(row => { items.push({ description: row.querySelector('.item-description').value, date_issued: row.querySelector('.date-issued').value, cost_per_day: parseFloat(row.querySelector('.cost-per-day').value) || 0, days_issued: parseInt(row.querySelector('.days-issued').value) || 1, amount_paid: parseFloat(row.querySelector('.amount-paid').value) || 0 }); }); await apiCall(`/api/clients/${currentClientId}/items/bulk`, { method:'PUT', body: JSON.stringify({ items }) }); if (showNotification) showSaveIndicator('Client saved'); await loadClientDropdown(); return true; }
+function autoSaveCurrentClient() { if (autoSaveTimeout) clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => { if (currentClientId) saveCurrentClient(false); }, 1500); }
 async function deleteCurrentClient() { if (!currentClientId) return alert('Select a client'); if (!confirm('Delete client and all data?')) return; await apiCall(`/api/clients/${currentClientId}`, { method:'DELETE' }); currentClientId = null; clearForm(); await loadClientDropdown(); showSaveIndicator('Client deleted'); }
 function deleteRow(btn) { const row = btn.closest('tr'); if (document.querySelectorAll('#rentalTableBody tr').length > 1) row.remove(); else clearForm(); calculateAll(); autoSaveCurrentClient(); }
 function clearForm() { document.getElementById('clientName').value = ''; document.getElementById('clientPhone').value = ''; document.getElementById('clientEmail').value = ''; document.getElementById('clientPOB').value = ''; document.getElementById('clientComment').value = ''; document.getElementById('rentalTableBody').innerHTML = ''; addNewRow(); calculateAll(); currentClientId = null; document.getElementById('currentClientDisplay').innerText = 'No client selected'; document.getElementById('clientDropdown').value = ''; }
@@ -365,14 +302,133 @@ function clearCurrentForm() { if(confirm('Clear form?')) clearForm(); }
 function saveAsPDF() { window.print(); }
 function showSaveIndicator(msg) { const ind=document.getElementById('saveIndicator'); ind.innerText=msg; ind.style.display='block'; setTimeout(()=>ind.style.display='none',2000); }
 function escapeHtml(str) { return str.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
-async function showTaxHistory() { try { const data = await apiCall('/api/tax-history'); let html = '<div style="max-height:500px; overflow:auto;"><table style="width:100%; border-collapse:collapse;"><tr><th>Client</th><th>Item</th><th>Total Cost</th><th>Tax Rate</th><th>Tax Amount</th><th>Net Amount</th></table>'; for (const item of data.history) { const net = item.cost_per_day * item.days_issued - item.tax_amount; html += `<tr><td>${escapeHtml(item.client_name)}</td><td>${escapeHtml(item.description)}</td><td>${(item.cost_per_day*item.days_issued).toFixed(2)}</td><td>${item.tax_rate}%</td><td>${item.tax_amount.toFixed(2)}</td><td>${net.toFixed(2)}</td></tr>`; } html += '</table></div><div style="margin-top:20px;"><button id="resetTestingDataBtn" style="background:#dc2626; color:white; padding:10px 20px; border:none; border-radius:40px;">Reset Testing Data (Delete All Clients/Items)</button></div>'; const modalDiv = document.createElement('div'); modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content" style="max-width:90%; max-height:80%; overflow:auto;"><h2>Tax History</h2>${html}<button id="closeTaxModal" style="margin-top:20px;">Close</button></div>`; document.body.appendChild(modalDiv); document.getElementById('closeTaxModal').onclick = () => modalDiv.remove(); document.getElementById('resetTestingDataBtn').onclick = async () => { if (confirm('WARNING: Deletes ALL clients/items. Cannot be undone. Continue?')) { await apiCall('/api/reset-testing-data', { method:'POST' }); alert('All testing data reset. Reloading...'); window.location.reload(); } }; } catch(err) { alert('Error: '+err.message); } }
+async function showTaxHistory() { try { const data = await apiCall('/api/tax-history'); let html = '<div style="max-height:500px; overflow:auto;"><table style="width:100%; border-collapse:collapse;"><tr><th>Client</th><th>Item</th><th>Total Cost</th><th>Tax Rate</th><th>Tax Amount</th><th>Net Amount</th></tr>'; for (const item of data.history) { const net = item.cost_per_day * item.days_issued - item.tax_amount; html += `<tr><td>${escapeHtml(item.client_name)}</td><td>${escapeHtml(item.description)}</td><td>${(item.cost_per_day*item.days_issued).toFixed(2)}</td><td>${item.tax_rate}%</td><td>${item.tax_amount.toFixed(2)}</td><td>${net.toFixed(2)}</td></tr>`; } html += '</table></div><div style="margin-top:20px;"><button id="resetTestingDataBtn" style="background:#dc2626; color:white; padding:10px 20px; border:none; border-radius:40px;">Reset Testing Data (Delete All Clients/Items)</button></div>'; const modalDiv = document.createElement('div'); modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content" style="max-width:90%; max-height:80%; overflow:auto;"><h2>Tax History</h2>${html}<button id="closeTaxModal" style="margin-top:20px;">Close</button></div>`; document.body.appendChild(modalDiv); document.getElementById('closeTaxModal').onclick = () => modalDiv.remove(); document.getElementById('resetTestingDataBtn').onclick = async () => { if (confirm('WARNING: Deletes ALL clients/items. Cannot be undone. Continue?')) { await apiCall('/api/reset-testing-data', { method:'POST' }); alert('All testing data reset. Reloading...'); window.location.reload(); } }; } catch(err) { alert('Error: '+err.message); } }
 async function exportToMaster() { const data = await apiCall('/api/export-data'); downloadJSON(data, `master_backup_${new Date().toISOString().slice(0,10)}.json`); }
 async function backupAllData() { exportToMaster(); }
 async function importFromClients() { const input = document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange = async (e) => { const file = e.target.files[0]; if(!file) return; const text = await file.text(); const data = JSON.parse(text); if(data.clients) await apiCall('/api/import-data', { method:'POST', body: JSON.stringify({ clients: data.clients }) }); await loadClientDropdown(); alert('Import complete'); }; input.click(); }
 async function createClientCopy() { if(!currentClientId) return alert('Select a client'); const clients = await apiCall('/api/clients'); const client = clients.clients.find(c=>c.id==currentClientId); const items = await apiCall(`/api/clients/${currentClientId}/items`); const copy = { clients: [{ ...client, items: items.items }] }; downloadJSON(copy, `client_${client.client_name}.json`); }
 function downloadJSON(obj, filename) { const blob = new Blob([JSON.stringify(obj, null,2)], {type:'application/json'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
-function handleFileSelect(input) { const file = input.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = async (e) => { let rows = []; if(file.name.endsWith('.csv')) rows = parseCSV(e.target.result); else { const data = new Uint8Array(e.target.result); const wb = XLSX.read(data, {type:'array'}); rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1}); } if(rows.length && confirm(`Import ${rows.length-1} rows?`)) { const tbody = document.getElementById('rentalTableBody'); tbody.innerHTML = ''; for(let i=1; i<rows.length; i++) { addNewRow(); const row = tbody.lastChild; if(rows[i][0]) row.querySelector('.item-description').value = rows[i][0]; if(rows[i][1]) row.querySelector('.date-issued').value = rows[i][1]; if(rows[i][2]) row.querySelector('.cost-per-day').value = rows[i][2]; if(rows[i][3]) row.querySelector('.days-issued').value = rows[i][3]; if(rows[i][4]) row.querySelector('.amount-paid').value = rows[i][4]; calculateRow(row); } calculateAll(); autoSaveCurrentClient(); } }; if(file.name.endsWith('.csv')) reader.readAsText(file); else reader.readAsArrayBuffer(file); }
-function parseCSV(text) { return text.split('\n').filter(l=>l.trim()).map(l=>l.split(',')); }
+
+// Improved CSV/Excel import with robust description parsing
+async function handleFileSelect(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    function parseCSV(text) {
+        // Remove BOM if present
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+        return lines.map(line => {
+            // Simple CSV parser that respects quotes
+            const regex = /("([^"]*)"|([^,]*))(,|$)/g;
+            const row = [];
+            let match;
+            while ((match = regex.exec(line)) !== null) {
+                row.push(match[2] !== undefined ? match[2] : (match[3] !== undefined ? match[3] : ''));
+                if (match[0].endsWith(',')) continue;
+                break;
+            }
+            return row;
+        });
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        let rows = [];
+        try {
+            if (file.name.endsWith('.csv')) {
+                rows = parseCSV(e.target.result);
+            } else {
+                const data = new Uint8Array(e.target.result);
+                const wb = XLSX.read(data, { type: 'array' });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+            }
+        } catch (err) {
+            alert('Error reading file: ' + err.message);
+            return;
+        }
+
+        if (!rows.length || rows.length < 2) {
+            alert('No data rows found.');
+            return;
+        }
+
+        // Remove header row (first row)
+        const dataRows = rows.slice(1).filter(r => r.length >= 5 && r.some(cell => cell && cell.toString().trim() !== ''));
+        if (dataRows.length === 0) {
+            alert('No valid rows (need at least 5 columns).');
+            return;
+        }
+
+        // Ensure a client exists
+        let clientName = document.getElementById('clientName').value.trim();
+        if (!clientName) {
+            clientName = prompt('Enter client/company name to save imported items:');
+            if (!clientName) {
+                alert('Import cancelled – client name required.');
+                input.value = '';
+                return;
+            }
+            document.getElementById('clientName').value = clientName;
+        }
+
+        // If no current client, create one
+        if (!currentClientId) {
+            try {
+                const newClient = await apiCall('/api/clients', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        client_name: clientName,
+                        client_phone: document.getElementById('clientPhone').value,
+                        client_email: document.getElementById('clientEmail').value,
+                        client_pob: document.getElementById('clientPOB').value,
+                        client_comment: document.getElementById('clientComment').value
+                    })
+                });
+                currentClientId = newClient.id;
+                await loadClientDropdown();
+                document.getElementById('clientDropdown').value = currentClientId;
+            } catch (err) {
+                alert('Failed to create client: ' + err.message);
+                return;
+            }
+        }
+
+        // Clear existing rows and add imported rows
+        const tbody = document.getElementById('rentalTableBody');
+        tbody.innerHTML = '';
+        for (let i = 0; i < dataRows.length; i++) {
+            addNewRow();
+            const row = tbody.lastChild;
+            const rowData = dataRows[i];
+            // Column mapping: 0=Description, 1=Date, 2=Cost, 3=Days, 4=Paid
+            if (rowData[0] !== undefined && rowData[0].toString().trim() !== '') {
+                row.querySelector('.item-description').value = rowData[0].toString().trim();
+            } else {
+                row.querySelector('.item-description').value = ''; // ensure empty if missing
+            }
+            if (rowData[1]) row.querySelector('.date-issued').value = rowData[1];
+            if (rowData[2]) row.querySelector('.cost-per-day').value = parseFloat(rowData[2]) || 0;
+            if (rowData[3]) row.querySelector('.days-issued').value = parseInt(rowData[3]) || 1;
+            if (rowData[4]) row.querySelector('.amount-paid').value = parseFloat(rowData[4]) || 0;
+            calculateRow(row);
+        }
+        calculateAll();
+
+        // Save the client with new items
+        try {
+            await saveCurrentClient(false);
+            showSaveIndicator(`Imported ${dataRows.length} items and saved.`);
+            await loadClient(); // refresh UI
+        } catch (err) {
+            alert('Error saving imported items: ' + err.message);
+        }
+    };
+    if (file.name.endsWith('.csv')) reader.readAsText(file, 'UTF-8');
+    else reader.readAsArrayBuffer(file);
+}
+
 function importSampleCSV() { downloadBlob("Description,Date Issued,Cost per Day,Days,Amount Paid\nExcavator,2024-01-15,15000,7,50000", "sample.csv", "text/csv"); }
 function downloadBlob(content, filename, mime) { const blob=new Blob([content], {type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
 function exportToCSV() { let csv = "Description,Date Issued,Cost per Day,Days,Amount Paid\n"; document.querySelectorAll('#rentalTableBody tr').forEach(r => { csv += `"${r.querySelector('.item-description').value}",${r.querySelector('.date-issued').value},${r.querySelector('.cost-per-day').value},${r.querySelector('.days-issued').value},${r.querySelector('.amount-paid').value}\n`; }); downloadBlob(csv, "rental_items.csv", "text/csv"); }
