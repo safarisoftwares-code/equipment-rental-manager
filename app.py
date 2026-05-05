@@ -12,12 +12,14 @@ CORS(app)
 SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
 
 # ------------------------------------------------------------------
-# Database path: use /tmp/rental.db on Render (writable), else local
+# Database path: use /tmp/rental.db on Render, else local data/rental.db
 # ------------------------------------------------------------------
 if os.environ.get('RENDER'):
     DATABASE = '/tmp/rental.db'
+    # Ensure the parent directory exists (tmp always does)
 else:
     DATABASE = 'data/rental.db'
+    os.makedirs('data', exist_ok=True)
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -70,6 +72,9 @@ def init_db():
         );
     ''')
     conn.close()
+
+# Initialize database on app startup (important for gunicorn)
+init_db()
 
 # ------------------------------------------------------------------
 # Helper: token required & admin required decorators
@@ -455,11 +460,7 @@ def static_files(path):
     return send_from_directory('static', path)
 
 # ------------------------------------------------------------------
-# Main entry point
+# Main entry point (for local development)
 # ------------------------------------------------------------------
 if __name__ == '__main__':
-    # Only create local 'data' folder when not on Render (not needed for /tmp)
-    if not os.environ.get('RENDER'):
-        os.makedirs('data', exist_ok=True)
-    init_db()
     app.run(host='0.0.0.0', port=3443, debug=False)
