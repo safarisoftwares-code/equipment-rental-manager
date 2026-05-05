@@ -9,8 +9,15 @@ from flask_cors import CORS
 
 app = Flask(__name__, static_folder='static')
 CORS(app)
-SECRET_KEY = "your-secret-key-change-this"
-DATABASE = "data/rental.db"
+SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
+
+# ------------------------------------------------------------------
+# Database path: use /tmp/rental.db on Render (writable), else local
+# ------------------------------------------------------------------
+if os.environ.get('RENDER'):
+    DATABASE = '/tmp/rental.db'
+else:
+    DATABASE = 'data/rental.db'
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -32,7 +39,7 @@ def init_db():
             company_address TEXT DEFAULT 'P. O. Box [Your Address]',
             company_email TEXT DEFAULT '[Your Email Address]',
             signature_name TEXT,
-            tax_rate REAL DEFAULT 16.0,
+            tax_rate REAL DEFAULT 0.0,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE IF NOT EXISTS clients (
@@ -64,6 +71,9 @@ def init_db():
     ''')
     conn.close()
 
+# ------------------------------------------------------------------
+# Helper: token required & admin required decorators
+# ------------------------------------------------------------------
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -97,6 +107,9 @@ def admin_required(f):
         return f(current_user_id, *args, **kwargs)
     return decorated
 
+# ------------------------------------------------------------------
+# Authentication endpoints
+# ------------------------------------------------------------------
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.json
@@ -160,6 +173,8 @@ def verify(current_user_id):
     conn = get_db()
     user = conn.execute('SELECT id, email, name, role, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = ?', (current_user_id,)).fetchone()
     conn.close()
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
     return jsonify({'user': dict(user)})
 
 @app.route('/api/auth/change-password', methods=['POST'])
@@ -181,6 +196,9 @@ def change_password(current_user_id):
     conn.close()
     return jsonify({'success': True})
 
+# ------------------------------------------------------------------
+# Admin user management
+# ------------------------------------------------------------------
 @app.route('/api/admin/users', methods=['GET'])
 @token_required
 @admin_required
@@ -227,6 +245,9 @@ def activate_user(current_user_id, user_id):
     conn.close()
     return jsonify({'success': True})
 
+# ------------------------------------------------------------------
+# Company settings (including tax rate)
+# ------------------------------------------------------------------
 @app.route('/api/company', methods=['PUT'])
 @token_required
 def update_company(current_user_id):
@@ -254,6 +275,9 @@ def update_company(current_user_id):
     conn.close()
     return jsonify({'success': True})
 
+# ------------------------------------------------------------------
+# Clients CRUD
+# ------------------------------------------------------------------
 @app.route('/api/clients', methods=['GET'])
 @token_required
 def get_clients(current_user_id):
@@ -312,6 +336,9 @@ def delete_client(current_user_id, client_id):
         return jsonify({'error': 'Client not found'}), 404
     return jsonify({'success': True})
 
+# ------------------------------------------------------------------
+# Rental items (with tax calculation)
+# ------------------------------------------------------------------
 @app.route('/api/clients/<int:client_id>/items', methods=['GET'])
 @token_required
 def get_items(current_user_id, client_id):
@@ -331,7 +358,7 @@ def bulk_update_items(current_user_id, client_id):
     items = data.get('items', [])
     conn = get_db()
     user = conn.execute('SELECT tax_rate FROM users WHERE id = ?', (current_user_id,)).fetchone()
-    current_tax_rate = user['tax_rate'] if user else 16.0
+    current_tax_rate = user['tax_rate'] if user else 0.0
     client = conn.execute('SELECT id FROM clients WHERE id = ? AND user_id = ?', (client_id, current_user_id)).fetchone()
     if not client:
         conn.close()
@@ -351,6 +378,9 @@ def bulk_update_items(current_user_id, client_id):
     conn.close()
     return jsonify({'success': True, 'count': len(items)})
 
+# ------------------------------------------------------------------
+# Tax history & reset testing data
+# ------------------------------------------------------------------
 @app.route('/api/tax-history', methods=['GET'])
 @token_required
 def tax_history(current_user_id):
@@ -373,6 +403,9 @@ def reset_testing_data(current_user_id):
     conn.close()
     return jsonify({'success': True})
 
+# ------------------------------------------------------------------
+# Export / Import data (JSON)
+# ------------------------------------------------------------------
 @app.route('/api/export-data', methods=['GET'])
 @token_required
 def export_data(current_user_id):
@@ -410,6 +443,9 @@ def import_data(current_user_id):
     conn.close()
     return jsonify({'success': True})
 
+# ------------------------------------------------------------------
+# Serve frontend static files
+# ------------------------------------------------------------------
 @app.route('/')
 def index():
     return send_from_directory('static', 'index.html')
@@ -418,7 +454,12 @@ def index():
 def static_files(path):
     return send_from_directory('static', path)
 
+# ------------------------------------------------------------------
+# Main entry point
+# ------------------------------------------------------------------
 if __name__ == '__main__':
-    os.makedirs('data', exist_ok=True)
+    # Only create local 'data' folder when not on Render (not needed for /tmp)
+    if not os.environ.get('RENDER'):
+        os.makedirs('data', exist_ok=True)
     init_db()
     app.run(host='0.0.0.0', port=3443, debug=False)
