@@ -29,7 +29,7 @@ def get_db():
     return conn
 
 def init_db():
-    """Create tables if they don't exist."""
+    """Create tables and create default admin if no users exist."""
     conn = get_db()
     conn.executescript('''
         CREATE TABLE IF NOT EXISTS users (
@@ -74,14 +74,40 @@ def init_db():
             FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
         );
     ''')
-    conn.close()
-    print("Database initialized (tables created if missing)", file=sys.stderr)
+    conn.commit()
 
-# Initialize database when the app starts (important for gunicorn)
+    # Create default admin if no users exist
+    admin_email = os.environ.get('ADMIN_EMAIL')
+    admin_password = os.environ.get('ADMIN_PASSWORD')
+    if admin_email and admin_password:
+        cursor = conn.execute('SELECT COUNT(*) as cnt FROM users')
+        count = cursor.fetchone()['cnt']
+        if count == 0:
+            hashed = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
+            conn.execute(
+                'INSERT INTO users (email, password_hash, name, role, is_active) VALUES (?, ?, ?, ?, ?)',
+                (admin_email, hashed.decode('utf-8'), 'System Admin', 'admin', 1)
+            )
+            conn.commit()
+            print(f"Default admin account created for {admin_email}", file=sys.stderr)
+        else:
+            # Ensure the admin email exists and is admin (if already present but maybe not admin)
+            # This is a safety: if the admin user exists but role is not admin, promote them.
+            conn.execute(
+                'UPDATE users SET role = "admin" WHERE email = ? AND role != "admin"',
+                (admin_email,)
+            )
+            conn.commit()
+    else:
+        print("ADMIN_EMAIL and ADMIN_PASSWORD not set – will not create default admin", file=sys.stderr)
+
+    conn.close()
+
+# Initialize database (tables and default admin)
 init_db()
 
 # ------------------------------------------------------------------
-# Health check endpoint (to verify database)
+# Health check
 # ------------------------------------------------------------------
 @app.route('/health', methods=['GET'])
 def health():
@@ -143,16 +169,16 @@ def register():
     hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     conn = get_db()
     try:
-        count = conn.execute('SELECT COUNT(*) as cnt FROM users').fetchone()['cnt']
-        role = 'admin' if count == 0 else 'user'
+        # All new registrations are regular users (role = 'user')
+        # No one ever becomes admin through registration.
         cursor = conn.execute(
             'INSERT INTO users (email, password_hash, name, role, is_active) VALUES (?, ?, ?, ?, ?)',
-            (email, hashed.decode('utf-8'), name, role, 1)
+            (email, hashed.decode('utf-8'), name, 'user', 1)
         )
         conn.commit()
         user_id = cursor.lastrowid
         token = jwt.encode({'userId': user_id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7)}, SECRET_KEY)
-        return jsonify({'token': token, 'user': {'id': user_id, 'email': email, 'name': name, 'role': role}})
+        return jsonify({'token': token, 'user': {'id': user_id, 'email': email, 'name': name, 'role': 'user'}})
     except sqlite3.IntegrityError:
         return jsonify({'error': 'Email already exists'}), 400
     finally:
@@ -219,7 +245,7 @@ def change_password(current_user_id):
     return jsonify({'success': True})
 
 # ------------------------------------------------------------------
-# Admin user management
+# Admin user management (only existing admin can do these)
 # ------------------------------------------------------------------
 @app.route('/api/admin/users', methods=['GET'])
 @token_required
@@ -298,7 +324,7 @@ def update_company(current_user_id):
     return jsonify({'success': True})
 
 # ------------------------------------------------------------------
-# Clients CRUD
+# Clients CRUD (no changes)
 # ------------------------------------------------------------------
 @app.route('/api/clients', methods=['GET'])
 @token_required
@@ -426,7 +452,7 @@ def reset_testing_data(current_user_id):
     return jsonify({'success': True})
 
 # ------------------------------------------------------------------
-# Export / Import data (JSON)
+# Export / Import data
 # ------------------------------------------------------------------
 @app.route('/api/export-data', methods=['GET'])
 @token_required
