@@ -8,75 +8,95 @@ from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 
+app = Flask(__name__, static_folder='static')
+CORS(app)
+SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
+
 # ------------------------------------------------------------------
-# Database setup: PostgreSQL on Render, SQLite locally
+# Database setup: PostgreSQL on Render (via pg8000) or SQLite locally
 # ------------------------------------------------------------------
 DATABASE_URL = os.environ.get('DATABASE_URL')
 IS_RENDER = bool(DATABASE_URL)
 
 if IS_RENDER:
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
+    import pg8000
+    # pg8000 connection function
+    def get_db():
+        # pg8000.connect expects a dsn string or keyword arguments
+        # Render's DATABASE_URL is a standard PostgreSQL URI
+        # Example: postgresql://user:pass@host:port/dbname
+        conn = pg8000.connect(dsn=DATABASE_URL)
+        return conn
 else:
     # local SQLite
     DATABASE = 'data/rental.db'
     os.makedirs('data', exist_ok=True)
-
-def get_db():
-    if IS_RENDER:
-        conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
-        return conn
-    else:
+    def get_db():
         conn = sqlite3.connect(DATABASE)
         conn.row_factory = sqlite3.Row
         return conn
 
+# ------------------------------------------------------------------
+# Helper to convert PostgreSQL rows (tuples) to dictionaries
+# ------------------------------------------------------------------
+if IS_RENDER:
+    def row_to_dict(cursor, row):
+        """Convert a pg8000 row (tuple) to a dict using cursor description."""
+        return {cursor.description[i][0]: row[i] for i in range(len(row))}
+
+# ------------------------------------------------------------------
+# Database initialization (tables and default admin)
+# ------------------------------------------------------------------
 def init_db():
     conn = get_db()
     if IS_RENDER:
-        with conn.cursor() as cur:
-            cur.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    id SERIAL PRIMARY KEY,
-                    email TEXT UNIQUE NOT NULL,
-                    password_hash TEXT NOT NULL,
-                    name TEXT,
-                    role TEXT DEFAULT 'user',
-                    is_active INTEGER DEFAULT 1,
-                    company_name TEXT DEFAULT 'Equipment Rental Manager Pro',
-                    company_phone TEXT DEFAULT 'Tel: [Your Phone Number]',
-                    company_address TEXT DEFAULT 'P. O. Box [Your Address]',
-                    company_email TEXT DEFAULT '[Your Email Address]',
-                    signature_name TEXT,
-                    tax_rate REAL DEFAULT 0.0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-                CREATE TABLE IF NOT EXISTS clients (
-                    id SERIAL PRIMARY KEY,
-                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-                    client_name TEXT NOT NULL,
-                    client_phone TEXT DEFAULT '',
-                    client_email TEXT DEFAULT '',
-                    client_pob TEXT DEFAULT '',
-                    client_comment TEXT DEFAULT '',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-                CREATE TABLE IF NOT EXISTS rental_items (
-                    id SERIAL PRIMARY KEY,
-                    client_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
-                    description TEXT DEFAULT '',
-                    date_issued TEXT DEFAULT '',
-                    cost_per_day REAL DEFAULT 0,
-                    days_issued INTEGER DEFAULT 1,
-                    amount_paid REAL DEFAULT 0,
-                    tax_rate REAL DEFAULT 0,
-                    tax_amount REAL DEFAULT 0,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                );
-            ''')
-            conn.commit()
+        cur = conn.cursor()
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                email TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                name TEXT,
+                role TEXT DEFAULT 'user',
+                is_active INTEGER DEFAULT 1,
+                company_name TEXT DEFAULT 'Equipment Rental Manager Pro',
+                company_phone TEXT DEFAULT 'Tel: [Your Phone Number]',
+                company_address TEXT DEFAULT 'P. O. Box [Your Address]',
+                company_email TEXT DEFAULT '[Your Email Address]',
+                signature_name TEXT,
+                tax_rate REAL DEFAULT 0.0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS clients (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                client_name TEXT NOT NULL,
+                client_phone TEXT DEFAULT '',
+                client_email TEXT DEFAULT '',
+                client_pob TEXT DEFAULT '',
+                client_comment TEXT DEFAULT '',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cur.execute('''
+            CREATE TABLE IF NOT EXISTS rental_items (
+                id SERIAL PRIMARY KEY,
+                client_id INTEGER NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+                description TEXT DEFAULT '',
+                date_issued TEXT DEFAULT '',
+                cost_per_day REAL DEFAULT 0,
+                days_issued INTEGER DEFAULT 1,
+                amount_paid REAL DEFAULT 0,
+                tax_rate REAL DEFAULT 0,
+                tax_amount REAL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        conn.commit()
     else:
         conn.executescript('''
             CREATE TABLE IF NOT EXISTS users (
@@ -127,28 +147,28 @@ def create_default_admin():
     admin_email = os.environ.get('ADMIN_EMAIL')
     admin_password = os.environ.get('ADMIN_PASSWORD')
     if not admin_email or not admin_password:
-        print("ADMIN_EMAIL or ADMIN_PASSWORD not set, skipping default admin creation", file=sys.stderr)
+        print("ADMIN_EMAIL or ADMIN_PASSWORD not set", file=sys.stderr)
         return
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT COUNT(*) as cnt FROM users")
-                count = cur.fetchone()['cnt']
-                if count == 0:
-                    hashed = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
-                    cur.execute(
-                        "INSERT INTO users (email, password_hash, name, role, is_active) VALUES (%s, %s, %s, %s, %s)",
-                        (admin_email, hashed.decode('utf-8'), 'System Admin', 'admin', 1)
-                    )
-                    conn.commit()
-                    print(f"Default admin account created for {admin_email}", file=sys.stderr)
-                else:
-                    cur.execute("UPDATE users SET role = 'admin' WHERE email = %s AND role != 'admin'", (admin_email,))
-                    conn.commit()
+            cur = conn.cursor()
+            cur.execute("SELECT COUNT(*) FROM users")
+            count = cur.fetchone()[0]
+            if count == 0:
+                hashed = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
+                cur.execute(
+                    "INSERT INTO users (email, password_hash, name, role, is_active) VALUES (%s, %s, %s, %s, %s)",
+                    (admin_email, hashed.decode('utf-8'), 'System Admin', 'admin', 1)
+                )
+                conn.commit()
+                print(f"Default admin created for {admin_email}", file=sys.stderr)
+            else:
+                cur.execute("UPDATE users SET role = 'admin' WHERE email = %s AND role != 'admin'", (admin_email,))
+                conn.commit()
         else:
-            cur = conn.execute("SELECT COUNT(*) as cnt FROM users")
-            count = cur.fetchone()['cnt']
+            cur = conn.execute("SELECT COUNT(*) FROM users")
+            count = cur.fetchone()[0]
             if count == 0:
                 hashed = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt())
                 conn.execute(
@@ -156,7 +176,7 @@ def create_default_admin():
                     (admin_email, hashed.decode('utf-8'), 'System Admin', 'admin', 1)
                 )
                 conn.commit()
-                print(f"Default admin account created for {admin_email}", file=sys.stderr)
+                print(f"Default admin created for {admin_email}", file=sys.stderr)
             else:
                 conn.execute("UPDATE users SET role = 'admin' WHERE email = ? AND role != 'admin'", (admin_email,))
                 conn.commit()
@@ -165,18 +185,11 @@ def create_default_admin():
     finally:
         conn.close()
 
-# ------------------------------------------------------------------
-# Flask app setup
-# ------------------------------------------------------------------
-app = Flask(__name__, static_folder='static')
-CORS(app)
-SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
-
 init_db()
 create_default_admin()
 
 # ------------------------------------------------------------------
-# Helper functions: token_required, admin_required
+# Helper: token_required, admin_required
 # ------------------------------------------------------------------
 def token_required(f):
     @wraps(f)
@@ -192,9 +205,10 @@ def token_required(f):
             return jsonify({'error': 'Invalid token'}), 401
         conn = get_db()
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT id, is_active, role FROM users WHERE id = %s", (current_user_id,))
-                user = cur.fetchone()
+            cur = conn.cursor()
+            cur.execute("SELECT id, is_active, role FROM users WHERE id = %s", (current_user_id,))
+            row = cur.fetchone()
+            user = row_to_dict(cur, row) if row else None
         else:
             cur = conn.execute("SELECT id, is_active, role FROM users WHERE id = ?", (current_user_id,))
             user = cur.fetchone()
@@ -211,9 +225,10 @@ def admin_required(f):
     def decorated(current_user_id, *args, **kwargs):
         conn = get_db()
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
-                user = cur.fetchone()
+            cur = conn.cursor()
+            cur.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
+            row = cur.fetchone()
+            user = row_to_dict(cur, row) if row else None
         else:
             cur = conn.execute("SELECT role FROM users WHERE id = ?", (current_user_id,))
             user = cur.fetchone()
@@ -231,8 +246,9 @@ def health():
     try:
         conn = get_db()
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1")
+            cur = conn.cursor()
+            cur.execute("SELECT 1")
+            cur.fetchone()
         else:
             conn.execute("SELECT 1")
         conn.close()
@@ -255,13 +271,13 @@ def register():
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO users (email, password_hash, name, role, is_active) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-                    (email, hashed.decode('utf-8'), name, 'user', 1)
-                )
-                user_id = cur.fetchone()['id']
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO users (email, password_hash, name, role, is_active) VALUES (%s, %s, %s, %s, %s) RETURNING id",
+                (email, hashed.decode('utf-8'), name, 'user', 1)
+            )
+            user_id = cur.fetchone()[0]
+            conn.commit()
         else:
             cur = conn.execute(
                 "INSERT INTO users (email, password_hash, name, role, is_active) VALUES (?, ?, ?, ?, ?)",
@@ -286,9 +302,10 @@ def login():
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT * FROM users WHERE email = %s", (email,))
-                user = cur.fetchone()
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+            row = cur.fetchone()
+            user = row_to_dict(cur, row) if row else None
         else:
             cur = conn.execute("SELECT * FROM users WHERE email = ?", (email,))
             user = cur.fetchone()
@@ -323,9 +340,10 @@ def verify(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT id, email, name, role, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = %s", (current_user_id,))
-                user = cur.fetchone()
+            cur = conn.cursor()
+            cur.execute("SELECT id, email, name, role, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = %s", (current_user_id,))
+            row = cur.fetchone()
+            user = row_to_dict(cur, row) if row else None
         else:
             cur = conn.execute("SELECT id, email, name, role, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = ?", (current_user_id,))
             user = cur.fetchone()
@@ -344,9 +362,10 @@ def change_password(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
-                user = cur.fetchone()
+            cur = conn.cursor()
+            cur.execute("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
+            row = cur.fetchone()
+            user = row_to_dict(cur, row) if row else None
         else:
             cur = conn.execute("SELECT password_hash FROM users WHERE id = ?", (current_user_id,))
             user = cur.fetchone()
@@ -354,9 +373,9 @@ def change_password(current_user_id):
             return jsonify({'error': 'Old password incorrect'}), 401
         new_hash = bcrypt.hashpw(new.encode('utf-8'), bcrypt.gensalt())
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_hash.decode('utf-8'), current_user_id))
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (new_hash.decode('utf-8'), current_user_id))
+            conn.commit()
         else:
             conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (new_hash.decode('utf-8'), current_user_id))
             conn.commit()
@@ -374,9 +393,10 @@ def get_users(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT id, email, name, role, is_active FROM users")
-                users = cur.fetchall()
+            cur = conn.cursor()
+            cur.execute("SELECT id, email, name, role, is_active FROM users")
+            rows = cur.fetchall()
+            users = [row_to_dict(cur, r) for r in rows]
         else:
             cur = conn.execute("SELECT id, email, name, role, is_active FROM users")
             users = cur.fetchall()
@@ -396,9 +416,9 @@ def reset_password(current_user_id, user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hashed.decode('utf-8'), user_id))
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hashed.decode('utf-8'), user_id))
+            conn.commit()
         else:
             conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hashed.decode('utf-8'), user_id))
             conn.commit()
@@ -415,9 +435,9 @@ def suspend_user(current_user_id, user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("UPDATE users SET is_active = 0 WHERE id = %s", (user_id,))
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute("UPDATE users SET is_active = 0 WHERE id = %s", (user_id,))
+            conn.commit()
         else:
             conn.execute("UPDATE users SET is_active = 0 WHERE id = ?", (user_id,))
             conn.commit()
@@ -432,9 +452,9 @@ def activate_user(current_user_id, user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("UPDATE users SET is_active = 1 WHERE id = %s", (user_id,))
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute("UPDATE users SET is_active = 1 WHERE id = %s", (user_id,))
+            conn.commit()
         else:
             conn.execute("UPDATE users SET is_active = 1 WHERE id = ?", (user_id,))
             conn.commit()
@@ -452,26 +472,26 @@ def update_company(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute('''
-                    UPDATE users SET
-                        company_name = COALESCE(%s, company_name),
-                        company_phone = COALESCE(%s, company_phone),
-                        company_address = COALESCE(%s, company_address),
-                        company_email = COALESCE(%s, company_email),
-                        signature_name = COALESCE(%s, signature_name),
-                        tax_rate = COALESCE(%s, tax_rate)
-                    WHERE id = %s
-                ''', (
-                    data.get('company_name'),
-                    data.get('company_phone'),
-                    data.get('company_address'),
-                    data.get('company_email'),
-                    data.get('signature_name'),
-                    data.get('tax_rate'),
-                    current_user_id
-                ))
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute('''
+                UPDATE users SET
+                    company_name = COALESCE(%s, company_name),
+                    company_phone = COALESCE(%s, company_phone),
+                    company_address = COALESCE(%s, company_address),
+                    company_email = COALESCE(%s, company_email),
+                    signature_name = COALESCE(%s, signature_name),
+                    tax_rate = COALESCE(%s, tax_rate)
+                WHERE id = %s
+            ''', (
+                data.get('company_name'),
+                data.get('company_phone'),
+                data.get('company_address'),
+                data.get('company_email'),
+                data.get('signature_name'),
+                data.get('tax_rate'),
+                current_user_id
+            ))
+            conn.commit()
         else:
             conn.execute('''
                 UPDATE users SET
@@ -505,9 +525,10 @@ def get_clients(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT * FROM clients WHERE user_id = %s ORDER BY created_at DESC", (current_user_id,))
-                clients = cur.fetchall()
+            cur = conn.cursor()
+            cur.execute("SELECT * FROM clients WHERE user_id = %s ORDER BY created_at DESC", (current_user_id,))
+            rows = cur.fetchall()
+            clients = [row_to_dict(cur, r) for r in rows]
         else:
             cur = conn.execute("SELECT * FROM clients WHERE user_id = ? ORDER BY created_at DESC", (current_user_id,))
             clients = cur.fetchall()
@@ -524,14 +545,14 @@ def create_client(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-                    (current_user_id, data['client_name'], data.get('client_phone', ''), data.get('client_email', ''),
-                     data.get('client_pob', ''), data.get('client_comment', ''))
-                )
-                client_id = cur.fetchone()['id']
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute(
+                "INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+                (current_user_id, data['client_name'], data.get('client_phone', ''), data.get('client_email', ''),
+                 data.get('client_pob', ''), data.get('client_comment', ''))
+            )
+            client_id = cur.fetchone()[0]
+            conn.commit()
         else:
             cur = conn.execute(
                 "INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment) VALUES (?, ?, ?, ?, ?, ?)",
@@ -551,23 +572,23 @@ def update_client(current_user_id, client_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute('''
-                    UPDATE clients SET
-                        client_name = COALESCE(%s, client_name),
-                        client_phone = COALESCE(%s, client_phone),
-                        client_email = COALESCE(%s, client_email),
-                        client_pob = COALESCE(%s, client_pob),
-                        client_comment = COALESCE(%s, client_comment),
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE id = %s AND user_id = %s
-                ''', (
-                    data.get('client_name'), data.get('client_phone'), data.get('client_email'),
-                    data.get('client_pob'), data.get('client_comment'), client_id, current_user_id
-                ))
-                if cur.rowcount == 0:
-                    return jsonify({'error': 'Client not found'}), 404
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute('''
+                UPDATE clients SET
+                    client_name = COALESCE(%s, client_name),
+                    client_phone = COALESCE(%s, client_phone),
+                    client_email = COALESCE(%s, client_email),
+                    client_pob = COALESCE(%s, client_pob),
+                    client_comment = COALESCE(%s, client_comment),
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = %s AND user_id = %s
+            ''', (
+                data.get('client_name'), data.get('client_phone'), data.get('client_email'),
+                data.get('client_pob'), data.get('client_comment'), client_id, current_user_id
+            ))
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Client not found'}), 404
+            conn.commit()
         else:
             result = conn.execute('''
                 UPDATE clients SET
@@ -595,11 +616,11 @@ def delete_client(current_user_id, client_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("DELETE FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
-                if cur.rowcount == 0:
-                    return jsonify({'error': 'Client not found'}), 404
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute("DELETE FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
+            if cur.rowcount == 0:
+                return jsonify({'error': 'Client not found'}), 404
+            conn.commit()
         else:
             result = conn.execute("DELETE FROM clients WHERE id = ? AND user_id = ?", (client_id, current_user_id))
             if result.rowcount == 0:
@@ -617,14 +638,15 @@ def delete_client(current_user_id, client_id):
 def get_items(current_user_id, client_id):
     conn = get_db()
     try:
+        # Verify client belongs to user
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT id FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
-                client = cur.fetchone()
-                if not client:
-                    return jsonify({'error': 'Client not found'}), 404
-                cur.execute("SELECT * FROM rental_items WHERE client_id = %s ORDER BY id", (client_id,))
-                items = cur.fetchall()
+            cur = conn.cursor()
+            cur.execute("SELECT id FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
+            if not cur.fetchone():
+                return jsonify({'error': 'Client not found'}), 404
+            cur.execute("SELECT * FROM rental_items WHERE client_id = %s ORDER BY id", (client_id,))
+            rows = cur.fetchall()
+            items = [row_to_dict(cur, r) for r in rows]
         else:
             client = conn.execute("SELECT id FROM clients WHERE id = ? AND user_id = ?", (client_id, current_user_id)).fetchone()
             if not client:
@@ -641,28 +663,29 @@ def bulk_update_items(current_user_id, client_id):
     items = data.get('items', [])
     conn = get_db()
     try:
-        # get current tax rate
+        # Get current tax rate from user
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT tax_rate FROM users WHERE id = %s", (current_user_id,))
-                user = cur.fetchone()
-                current_tax_rate = user['tax_rate'] if user else 0.0
-                cur.execute("SELECT id FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
-                client = cur.fetchone()
-                if not client:
-                    return jsonify({'error': 'Client not found'}), 404
-                cur.execute("DELETE FROM rental_items WHERE client_id = %s", (client_id,))
-                for item in items:
-                    cost_per_day = item.get('cost_per_day', 0)
-                    days = item.get('days_issued', 1)
-                    total_cost = cost_per_day * days
-                    tax_amount = total_cost * current_tax_rate / 100
-                    cur.execute('''
-                        INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                    ''', (client_id, item.get('description', ''), item.get('date_issued', ''),
-                          cost_per_day, days, item.get('amount_paid', 0), current_tax_rate, tax_amount))
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute("SELECT tax_rate FROM users WHERE id = %s", (current_user_id,))
+            row = cur.fetchone()
+            current_tax_rate = row[0] if row else 0.0
+            # Check client ownership
+            cur.execute("SELECT id FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
+            if not cur.fetchone():
+                return jsonify({'error': 'Client not found'}), 404
+            # Delete existing items
+            cur.execute("DELETE FROM rental_items WHERE client_id = %s", (client_id,))
+            for item in items:
+                cost_per_day = item.get('cost_per_day', 0)
+                days = item.get('days_issued', 1)
+                total_cost = cost_per_day * days
+                tax_amount = total_cost * current_tax_rate / 100
+                cur.execute('''
+                    INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ''', (client_id, item.get('description', ''), item.get('date_issued', ''),
+                      cost_per_day, days, item.get('amount_paid', 0), current_tax_rate, tax_amount))
+            conn.commit()
         else:
             user = conn.execute("SELECT tax_rate FROM users WHERE id = ?", (current_user_id,)).fetchone()
             current_tax_rate = user['tax_rate'] if user else 0.0
@@ -694,22 +717,23 @@ def tax_history(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute('''
-                    SELECT ri.*, c.client_name FROM rental_items ri
-                    JOIN clients c ON ri.client_id = c.id
-                    WHERE c.user_id = %s
-                    ORDER BY ri.created_at DESC
-                ''', (current_user_id,))
-                items = cur.fetchall()
+            cur = conn.cursor()
+            cur.execute('''
+                SELECT ri.*, c.client_name FROM rental_items ri
+                JOIN clients c ON ri.client_id = c.id
+                WHERE c.user_id = %s
+                ORDER BY ri.created_at DESC
+            ''', (current_user_id,))
+            rows = cur.fetchall()
+            history = [row_to_dict(cur, r) for r in rows]
         else:
-            items = conn.execute('''
+            history = conn.execute('''
                 SELECT ri.*, c.client_name FROM rental_items ri
                 JOIN clients c ON ri.client_id = c.id
                 WHERE c.user_id = ?
                 ORDER BY ri.created_at DESC
             ''', (current_user_id,)).fetchall()
-        return jsonify({'history': [dict(i) for i in items]})
+        return jsonify({'history': [dict(h) for h in history]})
     finally:
         conn.close()
 
@@ -719,9 +743,9 @@ def reset_testing_data(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("DELETE FROM clients WHERE user_id = %s", (current_user_id,))
-                conn.commit()
+            cur = conn.cursor()
+            cur.execute("DELETE FROM clients WHERE user_id = %s", (current_user_id,))
+            conn.commit()
         else:
             conn.execute("DELETE FROM clients WHERE user_id = ?", (current_user_id,))
             conn.commit()
@@ -738,16 +762,19 @@ def export_data(current_user_id):
     conn = get_db()
     try:
         if IS_RENDER:
-            with conn.cursor() as cur:
-                cur.execute("SELECT id, email, name, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = %s", (current_user_id,))
-                user = cur.fetchone()
-                cur.execute("SELECT * FROM clients WHERE user_id = %s", (current_user_id,))
-                clients = cur.fetchall()
-                export = {'user': dict(user), 'clients': []}
-                for client in clients:
-                    cur.execute("SELECT * FROM rental_items WHERE client_id = %s", (client['id'],))
-                    items = cur.fetchall()
-                    export['clients'].append({**dict(client), 'items': [dict(i) for i in items]})
+            cur = conn.cursor()
+            cur.execute("SELECT id, email, name, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = %s", (current_user_id,))
+            row = cur.fetchone()
+            user = row_to_dict(cur, row) if row else None
+            cur.execute("SELECT * FROM clients WHERE user_id = %s", (current_user_id,))
+            clients_rows = cur.fetchall()
+            clients = [row_to_dict(cur, r) for r in clients_rows]
+            export = {'user': dict(user), 'clients': []}
+            for client in clients:
+                cur.execute("SELECT * FROM rental_items WHERE client_id = %s", (client['id'],))
+                items_rows = cur.fetchall()
+                items = [row_to_dict(cur, r) for r in items_rows]
+                export['clients'].append({**dict(client), 'items': [dict(i) for i in items]})
         else:
             user = conn.execute("SELECT id, email, name, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = ?", (current_user_id,)).fetchone()
             clients = conn.execute("SELECT * FROM clients WHERE user_id = ?", (current_user_id,)).fetchall()
@@ -768,21 +795,21 @@ def import_data(current_user_id):
     try:
         for client in imported_clients:
             if IS_RENDER:
-                with conn.cursor() as cur:
+                cur = conn.cursor()
+                cur.execute('''
+                    INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment)
+                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+                ''', (current_user_id, client.get('client_name'), client.get('client_phone'), client.get('client_email'),
+                      client.get('client_pob'), client.get('client_comment')))
+                new_client_id = cur.fetchone()[0]
+                for item in client.get('items', []):
                     cur.execute('''
-                        INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment)
-                        VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
-                    ''', (current_user_id, client.get('client_name'), client.get('client_phone'), client.get('client_email'),
-                          client.get('client_pob'), client.get('client_comment')))
-                    new_client_id = cur.fetchone()['id']
-                    for item in client.get('items', []):
-                        cur.execute('''
-                            INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                        ''', (new_client_id, item.get('description'), item.get('date_issued'),
-                              item.get('cost_per_day'), item.get('days_issued'), item.get('amount_paid'),
-                              item.get('tax_rate', 0), item.get('tax_amount', 0)))
-                    conn.commit()
+                        INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (new_client_id, item.get('description'), item.get('date_issued'),
+                          item.get('cost_per_day'), item.get('days_issued'), item.get('amount_paid'),
+                          item.get('tax_rate', 0), item.get('tax_amount', 0)))
+                conn.commit()
             else:
                 cur = conn.execute('''
                     INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment)
@@ -803,7 +830,7 @@ def import_data(current_user_id):
         conn.close()
 
 # ------------------------------------------------------------------
-# Serve static frontend
+# Serve frontend
 # ------------------------------------------------------------------
 @app.route('/')
 def index():
@@ -814,7 +841,7 @@ def static_files(path):
     return send_from_directory('static', path)
 
 # ------------------------------------------------------------------
-# Run locally
+# Main
 # ------------------------------------------------------------------
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3443, debug=False)
