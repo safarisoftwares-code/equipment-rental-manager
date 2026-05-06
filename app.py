@@ -123,9 +123,6 @@ def init_db():
         ''')
     conn.close()
 
-# ------------------------------------------------------------------
-# Create default admin if no users exist
-# ------------------------------------------------------------------
 def create_default_admin():
     admin_email = os.environ.get('ADMIN_EMAIL')
     admin_password = os.environ.get('ADMIN_PASSWORD')
@@ -147,7 +144,6 @@ def create_default_admin():
                     conn.commit()
                     print(f"Default admin account created for {admin_email}", file=sys.stderr)
                 else:
-                    # Ensure the admin email exists and has admin role (in case DB was reset but users remain)
                     cur.execute("UPDATE users SET role = 'admin' WHERE email = %s AND role != 'admin'", (admin_email,))
                     conn.commit()
         else:
@@ -176,12 +172,11 @@ app = Flask(__name__, static_folder='static')
 CORS(app)
 SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
 
-# Initialize database tables and admin user
 init_db()
 create_default_admin()
 
 # ------------------------------------------------------------------
-# Helper functions (token required, admin required)
+# Helper functions: token_required, admin_required
 # ------------------------------------------------------------------
 def token_required(f):
     @wraps(f)
@@ -229,7 +224,7 @@ def admin_required(f):
     return decorated
 
 # ------------------------------------------------------------------
-# Health check endpoint
+# Health check
 # ------------------------------------------------------------------
 @app.route('/health', methods=['GET'])
 def health():
@@ -246,7 +241,7 @@ def health():
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
 # ------------------------------------------------------------------
-# Authentication endpoints (unchanged logic, only adapted for PostgreSQL)
+# Authentication endpoints
 # ------------------------------------------------------------------
 @app.route('/api/auth/register', methods=['POST'])
 def register():
@@ -257,8 +252,8 @@ def register():
     if not email or not password:
         return jsonify({'error': 'Email and password required'}), 400
     hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+    conn = get_db()
     try:
-        conn = get_db()
         if IS_RENDER:
             with conn.cursor() as cur:
                 cur.execute(
@@ -370,7 +365,7 @@ def change_password(current_user_id):
         conn.close()
 
 # ------------------------------------------------------------------
-# Admin user management (only existing admin can do these)
+# Admin user management
 # ------------------------------------------------------------------
 @app.route('/api/admin/users', methods=['GET'])
 @token_required
@@ -448,7 +443,7 @@ def activate_user(current_user_id, user_id):
         conn.close()
 
 # ------------------------------------------------------------------
-# Company settings (including tax rate) – adapts to both DBs
+# Company settings
 # ------------------------------------------------------------------
 @app.route('/api/company', methods=['PUT'])
 @token_required
@@ -502,19 +497,324 @@ def update_company(current_user_id):
         conn.close()
 
 # ------------------------------------------------------------------
-# Clients CRUD and rental items – unchanged logic, but DB‑agnostic
-# For brevity, these functions are identical to the previous working version
-# but adapted to use the same get_db() pattern.
-# Since you already have these endpoints working, I will include the exact same code
-# as in your last deployed version (the one that works) – only the database connection
-# wrapper changes. I'll show the pattern with one example, and then rely on the fact that
-# all other endpoints (clients, items, tax-history, export, import, reset-testing-data)
-# are identical to your current working app.py, just using get_db().
-# To keep this message manageable, I will provide the full file on request.
-# However, for a quick upgrade, the easiest is to replace your app.py with this version,
-# which includes all endpoints with proper DB abstraction (SQLite/PostgreSQL).
-# I will give you the complete file in the next message if you need it.
-# For now, commit this partial update and I'll send the full file.
-```text
-The full `app.py` is large. I will paste it in the next message (it’s about 600 lines).  
-After you replace it, your data will be permanently stored in PostgreSQL on Render.
+# Clients CRUD
+# ------------------------------------------------------------------
+@app.route('/api/clients', methods=['GET'])
+@token_required
+def get_clients(current_user_id):
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute("SELECT * FROM clients WHERE user_id = %s ORDER BY created_at DESC", (current_user_id,))
+                clients = cur.fetchall()
+        else:
+            cur = conn.execute("SELECT * FROM clients WHERE user_id = ? ORDER BY created_at DESC", (current_user_id,))
+            clients = cur.fetchall()
+        return jsonify({'clients': [dict(c) for c in clients]})
+    finally:
+        conn.close()
+
+@app.route('/api/clients', methods=['POST'])
+@token_required
+def create_client(current_user_id):
+    data = request.json
+    if not data.get('client_name'):
+        return jsonify({'error': 'Client name required'}), 400
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+                    (current_user_id, data['client_name'], data.get('client_phone', ''), data.get('client_email', ''),
+                     data.get('client_pob', ''), data.get('client_comment', ''))
+                )
+                client_id = cur.fetchone()['id']
+                conn.commit()
+        else:
+            cur = conn.execute(
+                "INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment) VALUES (?, ?, ?, ?, ?, ?)",
+                (current_user_id, data['client_name'], data.get('client_phone', ''), data.get('client_email', ''),
+                 data.get('client_pob', ''), data.get('client_comment', ''))
+            )
+            client_id = cur.lastrowid
+            conn.commit()
+        return jsonify({'id': client_id, 'client_name': data['client_name']})
+    finally:
+        conn.close()
+
+@app.route('/api/clients/<int:client_id>', methods=['PUT'])
+@token_required
+def update_client(current_user_id, client_id):
+    data = request.json
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    UPDATE clients SET
+                        client_name = COALESCE(%s, client_name),
+                        client_phone = COALESCE(%s, client_phone),
+                        client_email = COALESCE(%s, client_email),
+                        client_pob = COALESCE(%s, client_pob),
+                        client_comment = COALESCE(%s, client_comment),
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = %s AND user_id = %s
+                ''', (
+                    data.get('client_name'), data.get('client_phone'), data.get('client_email'),
+                    data.get('client_pob'), data.get('client_comment'), client_id, current_user_id
+                ))
+                if cur.rowcount == 0:
+                    return jsonify({'error': 'Client not found'}), 404
+                conn.commit()
+        else:
+            result = conn.execute('''
+                UPDATE clients SET
+                    client_name = COALESCE(?, client_name),
+                    client_phone = COALESCE(?, client_phone),
+                    client_email = COALESCE(?, client_email),
+                    client_pob = COALESCE(?, client_pob),
+                    client_comment = COALESCE(?, client_comment),
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ? AND user_id = ?
+            ''', (
+                data.get('client_name'), data.get('client_phone'), data.get('client_email'),
+                data.get('client_pob'), data.get('client_comment'), client_id, current_user_id
+            ))
+            if result.rowcount == 0:
+                return jsonify({'error': 'Client not found'}), 404
+            conn.commit()
+        return jsonify({'success': True})
+    finally:
+        conn.close()
+
+@app.route('/api/clients/<int:client_id>', methods=['DELETE'])
+@token_required
+def delete_client(current_user_id, client_id):
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
+                if cur.rowcount == 0:
+                    return jsonify({'error': 'Client not found'}), 404
+                conn.commit()
+        else:
+            result = conn.execute("DELETE FROM clients WHERE id = ? AND user_id = ?", (client_id, current_user_id))
+            if result.rowcount == 0:
+                return jsonify({'error': 'Client not found'}), 404
+            conn.commit()
+        return jsonify({'success': True})
+    finally:
+        conn.close()
+
+# ------------------------------------------------------------------
+# Rental items
+# ------------------------------------------------------------------
+@app.route('/api/clients/<int:client_id>/items', methods=['GET'])
+@token_required
+def get_items(current_user_id, client_id):
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
+                client = cur.fetchone()
+                if not client:
+                    return jsonify({'error': 'Client not found'}), 404
+                cur.execute("SELECT * FROM rental_items WHERE client_id = %s ORDER BY id", (client_id,))
+                items = cur.fetchall()
+        else:
+            client = conn.execute("SELECT id FROM clients WHERE id = ? AND user_id = ?", (client_id, current_user_id)).fetchone()
+            if not client:
+                return jsonify({'error': 'Client not found'}), 404
+            items = conn.execute("SELECT * FROM rental_items WHERE client_id = ? ORDER BY id", (client_id,)).fetchall()
+        return jsonify({'items': [dict(i) for i in items]})
+    finally:
+        conn.close()
+
+@app.route('/api/clients/<int:client_id>/items/bulk', methods=['PUT'])
+@token_required
+def bulk_update_items(current_user_id, client_id):
+    data = request.json
+    items = data.get('items', [])
+    conn = get_db()
+    try:
+        # get current tax rate
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute("SELECT tax_rate FROM users WHERE id = %s", (current_user_id,))
+                user = cur.fetchone()
+                current_tax_rate = user['tax_rate'] if user else 0.0
+                cur.execute("SELECT id FROM clients WHERE id = %s AND user_id = %s", (client_id, current_user_id))
+                client = cur.fetchone()
+                if not client:
+                    return jsonify({'error': 'Client not found'}), 404
+                cur.execute("DELETE FROM rental_items WHERE client_id = %s", (client_id,))
+                for item in items:
+                    cost_per_day = item.get('cost_per_day', 0)
+                    days = item.get('days_issued', 1)
+                    total_cost = cost_per_day * days
+                    tax_amount = total_cost * current_tax_rate / 100
+                    cur.execute('''
+                        INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    ''', (client_id, item.get('description', ''), item.get('date_issued', ''),
+                          cost_per_day, days, item.get('amount_paid', 0), current_tax_rate, tax_amount))
+                conn.commit()
+        else:
+            user = conn.execute("SELECT tax_rate FROM users WHERE id = ?", (current_user_id,)).fetchone()
+            current_tax_rate = user['tax_rate'] if user else 0.0
+            client = conn.execute("SELECT id FROM clients WHERE id = ? AND user_id = ?", (client_id, current_user_id)).fetchone()
+            if not client:
+                return jsonify({'error': 'Client not found'}), 404
+            conn.execute("DELETE FROM rental_items WHERE client_id = ?", (client_id,))
+            for item in items:
+                cost_per_day = item.get('cost_per_day', 0)
+                days = item.get('days_issued', 1)
+                total_cost = cost_per_day * days
+                tax_amount = total_cost * current_tax_rate / 100
+                conn.execute('''
+                    INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (client_id, item.get('description', ''), item.get('date_issued', ''),
+                      cost_per_day, days, item.get('amount_paid', 0), current_tax_rate, tax_amount))
+            conn.commit()
+        return jsonify({'success': True, 'count': len(items)})
+    finally:
+        conn.close()
+
+# ------------------------------------------------------------------
+# Tax history and reset
+# ------------------------------------------------------------------
+@app.route('/api/tax-history', methods=['GET'])
+@token_required
+def tax_history(current_user_id):
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute('''
+                    SELECT ri.*, c.client_name FROM rental_items ri
+                    JOIN clients c ON ri.client_id = c.id
+                    WHERE c.user_id = %s
+                    ORDER BY ri.created_at DESC
+                ''', (current_user_id,))
+                items = cur.fetchall()
+        else:
+            items = conn.execute('''
+                SELECT ri.*, c.client_name FROM rental_items ri
+                JOIN clients c ON ri.client_id = c.id
+                WHERE c.user_id = ?
+                ORDER BY ri.created_at DESC
+            ''', (current_user_id,)).fetchall()
+        return jsonify({'history': [dict(i) for i in items]})
+    finally:
+        conn.close()
+
+@app.route('/api/reset-testing-data', methods=['POST'])
+@token_required
+def reset_testing_data(current_user_id):
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute("DELETE FROM clients WHERE user_id = %s", (current_user_id,))
+                conn.commit()
+        else:
+            conn.execute("DELETE FROM clients WHERE user_id = ?", (current_user_id,))
+            conn.commit()
+        return jsonify({'success': True})
+    finally:
+        conn.close()
+
+# ------------------------------------------------------------------
+# Export / Import data
+# ------------------------------------------------------------------
+@app.route('/api/export-data', methods=['GET'])
+@token_required
+def export_data(current_user_id):
+    conn = get_db()
+    try:
+        if IS_RENDER:
+            with conn.cursor() as cur:
+                cur.execute("SELECT id, email, name, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = %s", (current_user_id,))
+                user = cur.fetchone()
+                cur.execute("SELECT * FROM clients WHERE user_id = %s", (current_user_id,))
+                clients = cur.fetchall()
+                export = {'user': dict(user), 'clients': []}
+                for client in clients:
+                    cur.execute("SELECT * FROM rental_items WHERE client_id = %s", (client['id'],))
+                    items = cur.fetchall()
+                    export['clients'].append({**dict(client), 'items': [dict(i) for i in items]})
+        else:
+            user = conn.execute("SELECT id, email, name, company_name, company_phone, company_address, company_email, signature_name, tax_rate FROM users WHERE id = ?", (current_user_id,)).fetchone()
+            clients = conn.execute("SELECT * FROM clients WHERE user_id = ?", (current_user_id,)).fetchall()
+            export = {'user': dict(user), 'clients': []}
+            for client in clients:
+                items = conn.execute("SELECT * FROM rental_items WHERE client_id = ?", (client['id'],)).fetchall()
+                export['clients'].append({**dict(client), 'items': [dict(i) for i in items]})
+        return jsonify(export)
+    finally:
+        conn.close()
+
+@app.route('/api/import-data', methods=['POST'])
+@token_required
+def import_data(current_user_id):
+    data = request.json
+    imported_clients = data.get('clients', [])
+    conn = get_db()
+    try:
+        for client in imported_clients:
+            if IS_RENDER:
+                with conn.cursor() as cur:
+                    cur.execute('''
+                        INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment)
+                        VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+                    ''', (current_user_id, client.get('client_name'), client.get('client_phone'), client.get('client_email'),
+                          client.get('client_pob'), client.get('client_comment')))
+                    new_client_id = cur.fetchone()['id']
+                    for item in client.get('items', []):
+                        cur.execute('''
+                            INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        ''', (new_client_id, item.get('description'), item.get('date_issued'),
+                              item.get('cost_per_day'), item.get('days_issued'), item.get('amount_paid'),
+                              item.get('tax_rate', 0), item.get('tax_amount', 0)))
+                    conn.commit()
+            else:
+                cur = conn.execute('''
+                    INSERT INTO clients (user_id, client_name, client_phone, client_email, client_pob, client_comment)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (current_user_id, client.get('client_name'), client.get('client_phone'), client.get('client_email'),
+                      client.get('client_pob'), client.get('client_comment')))
+                new_client_id = cur.lastrowid
+                for item in client.get('items', []):
+                    conn.execute('''
+                        INSERT INTO rental_items (client_id, description, date_issued, cost_per_day, days_issued, amount_paid, tax_rate, tax_amount)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (new_client_id, item.get('description'), item.get('date_issued'),
+                          item.get('cost_per_day'), item.get('days_issued'), item.get('amount_paid'),
+                          item.get('tax_rate', 0), item.get('tax_amount', 0)))
+                conn.commit()
+        return jsonify({'success': True})
+    finally:
+        conn.close()
+
+# ------------------------------------------------------------------
+# Serve static frontend
+# ------------------------------------------------------------------
+@app.route('/')
+def index():
+    return send_from_directory('static', 'index.html')
+
+@app.route('/<path:path>')
+def static_files(path):
+    return send_from_directory('static', path)
+
+# ------------------------------------------------------------------
+# Run locally
+# ------------------------------------------------------------------
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=3443, debug=False)
