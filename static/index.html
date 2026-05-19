@@ -14,21 +14,67 @@
         .container { max-width: 1400px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); margin: 0 auto; overflow: visible; }
         .form-container { padding: 15px 20px; }
         .client-management { gap: 12px; margin-bottom: 15px; padding: 12px 15px; background: #f1f5f9; border-radius: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; }
-        .client-info-section { gap: 12px; margin-bottom: 15px; padding: 12px 15px; background: white; border-radius: 16px; display: flex; flex-wrap: wrap; }
-        .client-field { flex:1; min-width:200px; }
+        .client-info-section { gap: 12px; margin-bottom: 15px; padding: 12px 15px; background: white; border-radius: 16px; display: flex; flex-wrap: wrap; align-items: center; }
+        .client-field { flex:1; min-width:180px; }
         .client-field label { font-weight:600; display:block; margin-bottom:4px; font-size:0.85rem; }
-        .underline-input { border:none; border-bottom:2px solid #2563eb; padding:6px 4px; width:100%; background:transparent; }
+        .underline-input { border:none; border-bottom:2px solid #2563eb; padding:8px 4px 6px 4px; width:100%; background:transparent; font-size:14px; }
         .import-export-section { margin: 10px 0; padding: 12px 15px; background:#f1f5f9; border-radius:16px; border:1px dashed #2563eb; }
         .import-export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .import-section h5, .export-section h5 { font-size: 1rem; margin-bottom: 10px; color: #1e3c72; font-weight: 600; }
         .table-wrapper { overflow-x: auto; margin: 10px 0; }
-        table { width: 100%; min-width: 700px; border-collapse: collapse; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        th { background:#1e40af; color:white; padding:10px 8px; font-weight:600; }
-        td { padding:8px; border-bottom:1px solid #e2e8f0; background:white; position:relative; }
+        table { width: 100%; min-width: 750px; border-collapse: collapse; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        th { background:#1e40af; color:white; padding:12px 10px; font-weight:600; text-align: left; vertical-align: middle; }
+        td { padding:8px 10px; border-bottom:1px solid #e2e8f0; background:white; vertical-align: middle; height: 48px; }
         tr:hover td { background:#fef9e3; }
-        .delete-row-btn { position:absolute; right:4px; top:50%; transform:translateY(-50%); background:#ef4444; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; opacity:0; display:flex; align-items:center; justify-content:center; }
-        tr:hover .delete-row-btn { opacity:1; }
-        input, select { width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:8px; }
+        
+        #rentalTable td input,
+        #rentalTable td select {
+            width: 100%;
+            margin: 0;
+            padding: 8px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            display: block;
+        }
+        
+        #rentalTable td .readonly {
+            background-color: #f3f4f6;
+            border-color: #e5e7eb;
+        }
+        
+        .delete-row-btn {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        tr:hover .delete-row-btn { opacity: 1; }
+        
+        input[type="number"], input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 8px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
         .total-row { background:#e6f0ff; font-weight:700; }
+        .total-row td { padding:12px 10px; }
+        
         .actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap:8px; margin:15px 0 10px; }
         .btn { padding:6px 12px; border-radius:40px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:0.2s; flex:1 0 auto; justify-content:center; font-size:0.85rem; }
         .btn-primary { background:#2563eb; color:white; }
@@ -41,7 +87,7 @@
         .comment-box { width:100%; min-height:60px; padding:10px; border:1px solid #e2e8f0; border-radius:12px; }
         .form-footer { display: flex; justify-content: space-between; margin-top:15px; gap:15px; }
         .signature-area { flex:1; text-align:center; background:#faf9fe; padding:12px; border-radius:16px; }
-        .signature-line { border-bottom:2px solid #2563eb; padding:20px 0 6px; margin-top:8px; }
+        .signature-line { border-bottom:2px solid #2563eb; padding:25px 0 6px; margin-top:8px; }
         .save-indicator { position:fixed; bottom:20px; right:20px; background:#10b981; color:white; padding:8px 16px; border-radius:40px; display:none; z-index:1000; font-weight:600; }
         .update-controls { position:fixed; top:15px; right:15px; z-index:1000; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
         .dropdown { position:relative; display:inline-block; }
@@ -50,9 +96,9 @@
         .dropdown-content a { padding:10px 14px; text-decoration:none; display:flex; align-items:center; gap:8px; cursor:pointer; border-bottom:1px solid #f1f5f9; color:#1e293b; }
         .dropdown-content a:hover { background:#f1f5f9; }
         .dropdown:hover .dropdown-content { display:block; }
-        .current-client-display { background:#e0f2fe; padding:8px; border-radius:40px; margin-bottom:12px; text-align:center; font-weight:600; font-size:0.85rem; }
+        .current-client-display { background:#e0f2fe; padding:10px; border-radius:40px; margin-bottom:15px; text-align:center; font-weight:600; font-size:0.9rem; }
         .modal { display: flex; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index:2000; justify-content: center; align-items: center; }
-        .modal-content { background: #fff; padding: 30px; border-radius: 24px; width:90%; max-width:500px; }
+        .modal-content { background: #fff; padding: 30px; border-radius: 24px; width:90%; max-width:500px; max-height: 80vh; overflow-y: auto; }
         .modal-content h2 { color: #1e3c72; margin-bottom:20px; text-align:center; }
         .modal-content input { width:100%; padding:12px; margin:10px 0; border:2px solid #2563eb; border-radius:12px; }
         .modal-content button { width:100%; padding:12px; background:#2563eb; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; }
@@ -74,7 +120,6 @@
         .password-wrapper { position: relative; width: 100%; }
         .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #2563eb; background: white; padding: 4px; border-radius: 50%; }
         
-        /* ----- RESPONSIVE FIXES (mobile) with centered header order ----- */
         @media (max-width: 768px) {
             .form-container { padding: 10px; }
             .update-controls { flex-wrap: wrap; justify-content: flex-end; gap: 6px; top: 10px; right: 10px; }
@@ -85,10 +130,9 @@
             .actions { flex-direction: column; }
             .btn { width: 100%; }
             .table-wrapper { overflow-x: auto; }
-            table { min-width: 700px; }
-            th, td { font-size: 0.75rem; padding: 6px 4px; }
-            
-            /* ----- HEADER REORDER AND CENTERING ----- */
+            table { min-width: 750px; }
+            th, td { font-size: 0.75rem; padding: 6px 6px; }
+            #rentalTable td input { padding: 6px 4px; font-size: 12px; }
             .company-details {
                 display: flex;
                 flex-direction: column;
@@ -97,10 +141,9 @@
                 gap: 5px;
                 margin-top: 10px;
             }
-            /* Reorder items: Address (P.O. Box) first, then Email, then Telephone */
-            .detail-item:nth-child(1) { order: 1; }  /* address/P.O. Box */
-            .detail-item:nth-child(3) { order: 2; }  /* email */
-            .detail-item:nth-child(2) { order: 3; }  /* telephone */
+            .detail-item:nth-child(1) { order: 1; }
+            .detail-item:nth-child(3) { order: 2; }
+            .detail-item:nth-child(2) { order: 3; }
             .detail-item {
                 background: rgba(255,255,255,0.15);
                 border-radius: 40px;
@@ -163,6 +206,7 @@
             <div class="setup-form" id="setupForm">
                 <div class="setup-field"><label>Company Name</label><input type="text" id="companyName" class="setup-input"></div>
                 <div class="setup-field"><label>Telephone</label><input type="text" id="companyPhone" class="setup-input"></div>
+                <div class="setup-field"><label>Tax PIN</label><input type="text" id="companyTaxPin" class="setup-input" placeholder="KRA PIN / Tax ID"></div>
                 <div class="setup-field"><label>Address</label><input type="text" id="companyAddress" class="setup-input"></div>
                 <div class="setup-field"><label>Email</label><input type="text" id="companyEmail" class="setup-input"></div>
                 <div class="setup-field"><label>Tax Rate (%)</label><input type="number" step="0.1" id="taxRate" class="setup-input" value="0"></div>
@@ -178,25 +222,54 @@
             <div class="client-info-section">
                 <div class="client-field"><label>M/S (Client/Company)</label><input type="text" id="clientName" class="underline-input" placeholder="Client name"></div>
                 <div class="client-field"><label>Telephone</label><input type="text" id="clientPhone" class="underline-input"></div>
+                <div class="client-field"><label>Tax PIN</label><input type="text" id="clientTaxPin" class="underline-input" placeholder="Client Tax PIN"></div>
                 <div class="client-field"><label>Email</label><input type="text" id="clientEmail" class="underline-input"></div>
                 <div class="client-field"><label>P.O. Box/Address</label><input type="text" id="clientPOB" class="underline-input"></div>
             </div>
             <div class="import-export-section no-print">
-                <h4>Import/Export Items</h4>
                 <div class="import-export-grid">
-                    <div><button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">Choose CSV/Excel</button><input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(this)"> <button class="btn btn-outline" onclick="importSampleCSV()">Sample CSV</button></div>
-                    <div><button class="btn btn-outline" onclick="exportToCSV()">CSV</button> <button class="btn btn-outline" onclick="exportToExcel()">Excel</button> <button class="btn btn-outline" onclick="exportToJSON()">JSON</button> <button class="btn btn-outline" onclick="showTaxHistory()">Tax History</button></div>
+                    <div class="import-section">
+                        <h5>Import Items</h5>
+                        <button class="btn btn-outline" onclick="document.getElementById('fileInput').click()">Choose CSV/Excel</button>
+                        <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleFileSelect(this)">
+                        <button class="btn btn-outline" onclick="importSampleCSV()">Sample CSV</button>
+                    </div>
+                    <div class="export-section">
+                        <h5>Export Items</h5>
+                        <button class="btn btn-outline" onclick="exportToCSV()">CSV</button>
+                        <button class="btn btn-outline" onclick="exportToExcel()">Excel</button>
+                        <button class="btn btn-outline" onclick="exportToJSON()">JSON</button>
+                        <button class="btn btn-outline" onclick="showTaxHistory()">Tax History</button>
+                    </div>
                 </div>
             </div>
             <div class="table-wrapper">
                 <table id="rentalTable">
                     <thead>
-                        <tr><th>Description</th><th>Date Issued</th><th>Cost/Day</th><th>Days</th><th>Total Cost</th><th class="tooltip-icon">Tax</th><th>Amount Paid</th><th>Balance</th><th style="width:40px"></th>
-                        </thead>
+                        <tr>
+                            <th style="min-width:180px">Description</th>
+                            <th style="min-width:110px">Date Issued</th>
+                            <th style="min-width:80px">Cost</th>
+                            <th style="min-width:80px">Quantity</th>
+                            <th style="min-width:100px">Total Cost</th>
+                            <th style="min-width:80px">Tax</th>
+                            <th style="min-width:100px">Amount Paid</th>
+                            <th style="min-width:100px">Balance</th>
+                            <th style="width:40px"></th>
+                        </tr>
+                    </thead>
                     <tbody id="rentalTableBody"></tbody>
-                    <tfoot><tr class="total-row"><td colspan="4">GRAND TOTAL: None<td id="grandTotal">0.00</td><td id="grandTax">0.00</td><td id="grandPaid">0.00</td><td id="grandBalance">0.00</td><td></td></tr>
-                </tfoot>
-             </table>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="4">GRAND TOTAL:</td>
+                            <td id="grandTotal">0.00</td>
+                            <td id="grandTax">0.00</td>
+                            <td id="grandPaid">0.00</td>
+                            <td id="grandBalance">0.00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
             <div class="actions no-print">
                 <button class="btn btn-primary" onclick="addNewRow()">Add Item</button>
@@ -214,29 +287,125 @@
         </div>
     </div>
     <div class="footer no-print">
-        <p>© 2026 Safari Softwares. All rights reserved.</p>
+        <p>&copy; 2026 Safari Softwares. All rights reserved.</p>
         <div>safarisoftwares@gmail.com | +254112168732</div>
-        <div><a href="#" onclick="showPrivacy()">Privacy Policy</a> | <a href="#" onclick="showTerms()">Terms of Use</a></div>
+        <div><a href="#" onclick="showPrivacyPolicy()">Privacy Policy</a> | <a href="#" onclick="showTermsOfUse()">Terms of Use</a></div>
     </div>
 </div>
 
 <script>
-// ==================== DATABASE AND API SETUP ====================
+// ==================== Helper functions ====================
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+}
+
+function showSaveIndicator(msg) {
+    const ind = document.getElementById('saveIndicator');
+    ind.innerText = msg;
+    ind.style.display = 'block';
+    setTimeout(() => ind.style.display = 'none', 2000);
+}
+
+function downloadBlob(content, filename, mime) {
+    const blob = new Blob([content], { type: mime });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function downloadJSON(obj, filename) {
+    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+// ==================== Privacy Policy & Terms of Use ====================
+function showPrivacyPolicy() {
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal';
+    modalDiv.innerHTML = `
+        <div class="modal-content" style="max-width:600px;">
+            <h2>Privacy Policy</h2>
+            <div style="text-align:left; max-height:60vh; overflow-y:auto; padding-right:10px;">
+                <p><strong>Effective Date:</strong> May 2026</p>
+                <p><strong>1. Information We Collect</strong><br>
+                We collect business and client information you provide, including names, contact details, rental records, payment information, and Tax PINs. This data is necessary for the operation of the equipment rental management system.</p>
+                <p><strong>2. How We Use Your Information</strong><br>
+                Your data is used solely to manage rental transactions, generate reports, and comply with tax regulations. We do not sell or share your personal data with third parties for marketing purposes.</p>
+                <p><strong>3. Data Security</strong><br>
+                We implement industry-standard security measures to protect your data against unauthorized access, alteration, or destruction. All passwords are hashed, and database connections are encrypted.</p>
+                <p><strong>4. Data Retention</strong><br>
+                Your data is retained as long as your account is active or as needed to provide you services. You may request deletion of your data by contacting support.</p>
+                <p><strong>5. Your Rights</strong><br>
+                You have the right to access, correct, or delete your personal information. Contact us at safarisoftwares@gmail.com for any privacy-related requests.</p>
+                <p><strong>6. Changes to This Policy</strong><br>
+                We may update this privacy policy from time to time. Continued use of the system constitutes acceptance of any changes.</p>
+                <p><strong>7. Contact Us</strong><br>
+                Safari Softwares, safarisoftwares@gmail.com, WhatsApp: +254112168732</p>
+            </div>
+            <button id="closePrivacyModal" class="btn btn-primary" style="margin-top:20px;">Close</button>
+        </div>
+    `;
+    document.body.appendChild(modalDiv);
+    document.getElementById('closePrivacyModal').onclick = () => modalDiv.remove();
+}
+
+function showTermsOfUse() {
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal';
+    modalDiv.innerHTML = `
+        <div class="modal-content" style="max-width:600px;">
+            <h2>Terms of Use</h2>
+            <div style="text-align:left; max-height:60vh; overflow-y:auto; padding-right:10px;">
+                <p><strong>Effective Date:</strong> May 2026</p>
+                <p><strong>1. Acceptance of Terms</strong><br>
+                By using the Equipment Rental Manager Pro, you agree to be bound by these Terms of Use. If you do not agree, do not use the system.</p>
+                <p><strong>2. License</strong><br>
+                We grant you a non-exclusive, non-transferable license to use the software for your internal business purposes. You may not resell, redistribute, or reverse-engineer the software.</p>
+                <p><strong>3. User Responsibilities</strong><br>
+                You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to provide accurate and complete information.</p>
+                <p><strong>4. Prohibited Uses</strong><br>
+                You may not use the system for any illegal purpose, to harass or harm others, or to interfere with the operation of the service.</p>
+                <p><strong>5. Disclaimer of Warranties</strong><br>
+                The software is provided "as is" without warranties of any kind. We do not guarantee that the system will be uninterrupted, error-free, or free from harmful components.</p>
+                <p><strong>6. Limitation of Liability</strong><br>
+                To the maximum extent permitted by law, Safari Softwares shall not be liable for any indirect, incidental, or consequential damages arising from the use of the software.</p>
+                <p><strong>7. Termination</strong><br>
+                We may suspend or terminate your access at any time if you violate these terms. You may delete your account at any time via the admin dashboard.</p>
+                <p><strong>8. Governing Law</strong><br>
+                These terms shall be governed by the laws of the Republic of Kenya.</p>
+                <p><strong>9. Changes to Terms</strong><br>
+                We may update these terms from time to time. Continued use of the system constitutes acceptance of the revised terms.</p>
+                <p><strong>10. Contact</strong><br>
+                For questions, contact safarisoftwares@gmail.com or +254112168732.</p>
+            </div>
+            <button id="closeTermsModal" class="btn btn-primary" style="margin-top:20px;">Close</button>
+        </div>
+    `;
+    document.body.appendChild(modalDiv);
+    document.getElementById('closeTermsModal').onclick = () => modalDiv.remove();
+}
+
+// ==================== API and Authentication ====================
 const API_BASE = window.location.origin;
 let token = localStorage.getItem('token');
 let currentClientId = null;
 let autoSaveTimeout = null;
 let currentUserRole = null;
 let currentUserEmail = '';
-let isSaving = false;
-let hasUnsavedChanges = false;
 
 async function apiCall(endpoint, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
     if (token) headers['Authorization'] = `Bearer ${token}`;
     const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
     if (res.status === 401 || res.status === 403) {
-        const errData = await res.json().catch(()=>({}));
+        const errData = await res.json().catch(() => ({}));
         if (errData.error && errData.error.includes('suspended')) alert(errData.error);
         localStorage.removeItem('token');
         token = null;
@@ -248,7 +417,6 @@ async function apiCall(endpoint, options = {}) {
     return res.json();
 }
 
-// ==================== PASSWORD TOGGLE ====================
 document.getElementById('togglePassword').addEventListener('click', function() {
     const passwordInput = document.getElementById('loginPassword');
     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
@@ -256,14 +424,13 @@ document.getElementById('togglePassword').addEventListener('click', function() {
     this.classList.toggle('fa-eye-slash');
 });
 
-// ==================== AUTHENTICATION ====================
 document.getElementById('loginBtn').onclick = async () => {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     const errorDiv = document.getElementById('authError');
     if (!email || !password) { errorDiv.innerText = 'Enter email and password'; return; }
     try {
-        const res = await fetch(`${API_BASE}/api/auth/login`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password}) });
+        const res = await fetch(`${API_BASE}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
         if (!res.ok) { const err = await res.json(); throw new Error(err.error || 'Invalid credentials'); }
         const data = await res.json();
         token = data.token; currentUserRole = data.user.role;
@@ -280,17 +447,17 @@ document.getElementById('showRegister').onclick = async () => {
     const password = prompt('Password:'); if (!password) return;
     const name = prompt('Your name (optional):');
     try {
-        const res = await fetch(`${API_BASE}/api/auth/register`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email, password, name}) });
+        const res = await fetch(`${API_BASE}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name }) });
         const data = await res.json();
         if (data.token) { token = data.token; currentUserRole = data.user.role; localStorage.setItem('token', token); document.getElementById('loginModal').style.display = 'none'; document.getElementById('mainApp').style.display = 'block'; loadCompanyFromUser(); loadClientDropdown(); clearForm(); if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex'; }
         else alert('Registration failed');
-    } catch(err) { alert(err.message); }
+    } catch (err) { alert(err.message); }
 };
 
 document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('token'); token = null; document.getElementById('loginModal').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none'; };
-document.getElementById('changePasswordBtn').onclick = () => { const old = prompt('Current password:'); if(!old) return; const newp = prompt('New password:'); if(!newp) return; apiCall('/api/auth/change-password', { method:'POST', body: JSON.stringify({ old_password: old, new_password: newp }) }).then(()=>alert('Password changed')).catch(err=>alert(err.message)); };
+document.getElementById('changePasswordBtn').onclick = () => { const old = prompt('Current password:'); if (!old) return; const newp = prompt('New password:'); if (!newp) return; apiCall('/api/auth/change-password', { method: 'POST', body: JSON.stringify({ old_password: old, new_password: newp }) }).then(() => alert('Password changed')).catch(err => alert(err.message)); };
 
-// ==================== ADMIN DASHBOARD ====================
+// ==================== Admin Dashboard ====================
 document.getElementById('adminDashboardBtn').onclick = async () => {
     try {
         const data = await apiCall('/api/admin/users');
@@ -311,80 +478,400 @@ document.getElementById('adminDashboardBtn').onclick = async () => {
         html += '</table>';
         container.innerHTML = html;
         document.getElementById('adminModal').style.display = 'flex';
-    } catch(err) { alert(err.message); }
+    } catch (err) { alert(err.message); }
 };
 
 window.adminResetPassword = async (email, userId) => {
     const newPass = prompt(`Reset password for ${email}\nEnter new password:`);
     if (!newPass) return;
-    await apiCall(`/api/admin/users/${userId}/reset-password`, { method:'POST', body: JSON.stringify({ new_password: newPass }) });
+    await apiCall(`/api/admin/users/${userId}/reset-password`, { method: 'POST', body: JSON.stringify({ new_password: newPass }) });
     alert(`Password for ${email} has been reset.`);
 };
 window.adminSuspendUser = async (userId, email) => {
     if (confirm(`Suspend user ${email}? They will not be able to log in.`)) {
-        await apiCall(`/api/admin/users/${userId}/suspend`, { method:'POST' });
+        await apiCall(`/api/admin/users/${userId}/suspend`, { method: 'POST' });
         alert(`User ${email} suspended.`);
         document.getElementById('adminDashboardBtn').click();
     }
 };
 window.adminActivateUser = async (userId, email) => {
-    await apiCall(`/api/admin/users/${userId}/activate`, { method:'POST' });
+    await apiCall(`/api/admin/users/${userId}/activate`, { method: 'POST' });
     alert(`User ${email} activated.`);
     document.getElementById('adminDashboardBtn').click();
 };
 document.getElementById('closeAdminModal').onclick = () => { document.getElementById('adminModal').style.display = 'none'; };
 
-// ==================== COMPANY AND CLIENT FUNCTIONS ====================
-async function loadCompanyFromUser() { try { const data = await apiCall('/api/auth/verify'); const u = data.user; currentUserEmail = u.email; document.getElementById('companyNameDisplay').innerText = u.company_name || 'Equipment Rental Manager Pro'; document.getElementById('phoneDisplay').innerText = u.company_phone || 'Tel: ...'; document.getElementById('addressDisplay').innerText = u.company_address || 'P. O. Box ...'; document.getElementById('emailDisplay').innerText = u.company_email || '...'; document.getElementById('companySignatureName').innerText = u.signature_name || u.company_name || 'Your Company'; document.getElementById('companyName').value = u.company_name || ''; document.getElementById('companyPhone').value = (u.company_phone || '').replace('Tel: ', ''); document.getElementById('companyAddress').value = u.company_address || ''; document.getElementById('companyEmail').value = u.company_email || ''; document.getElementById('taxRate').value = u.tax_rate || 0; } catch(e){ console.error(e); } }
-async function saveCompanyDetails() { await apiCall('/api/company', { method:'PUT', body: JSON.stringify({ company_name: document.getElementById('companyName').value, company_phone: document.getElementById('companyPhone').value, company_address: document.getElementById('companyAddress').value, company_email: document.getElementById('companyEmail').value, signature_name: document.getElementById('companyName').value, tax_rate: parseFloat(document.getElementById('taxRate').value) || 0 }) }); await loadCompanyFromUser(); toggleSetupForm(); showSaveIndicator('Company & Tax saved'); }
-function toggleSetupForm() { const f=document.getElementById('setupForm'); f.style.display = f.style.display==='none'?'grid':'none'; }
-async function loadClientDropdown() { const data = await apiCall('/api/clients'); const dropdown = document.getElementById('clientDropdown'); dropdown.innerHTML = '<option value="">-- Select Client --</option>'; for (const c of data.clients) { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = `${c.client_name} (${c.client_phone || 'no phone'})`; dropdown.appendChild(opt); } }
-async function loadClient() { const id = document.getElementById('clientDropdown').value; if (!id) { currentClientId = null; clearForm(); return; } currentClientId = parseInt(id); const itemsData = await apiCall(`/api/clients/${currentClientId}/items`); const clientsData = await apiCall('/api/clients'); const clientInfo = clientsData.clients.find(c => c.id == currentClientId); if (clientInfo) { document.getElementById('clientName').value = clientInfo.client_name || ''; document.getElementById('clientPhone').value = clientInfo.client_phone || ''; document.getElementById('clientEmail').value = clientInfo.client_email || ''; document.getElementById('clientPOB').value = clientInfo.client_pob || ''; document.getElementById('clientComment').value = clientInfo.client_comment || ''; } const tbody = document.getElementById('rentalTableBody'); tbody.innerHTML = ''; if (itemsData.items.length === 0) addNewRow(); for (const item of itemsData.items) addRowFromItem(item); calculateAll(); document.getElementById('currentClientDisplay').innerText = `Current: ${clientInfo?.client_name || 'Unknown'}`; hasUnsavedChanges = false; }
-function addRowFromItem(item) { const tbody = document.getElementById('rentalTableBody'); const row = tbody.insertRow(); const total = (item.cost_per_day * item.days_issued); const tax = item.tax_amount || 0; const net = total - tax; const tooltip = `Tax: ${tax.toFixed(2)} KES | Net: ${net.toFixed(2)} KES`; row.innerHTML = `<td><input type="text" class="item-description" value="${escapeHtml(item.description || '')}"></td><td><input type="date" class="date-issued" value="${item.date_issued || ''}"></td><td><input type="number" step="0.01" min="0" class="cost-per-day" value="${item.cost_per_day || 0}"></td><td><input type="number" min="1" class="days-issued" value="${item.days_issued || 1}"></td><td><input type="number" class="total-cost readonly" readonly value="${total.toFixed(2)}"></td><td><input type="number" class="tax-amount readonly" readonly value="${tax.toFixed(2)}" style="cursor:help;" title="${tooltip}"></td><td><input type="number" step="0.01" min="0" class="amount-paid" value="${item.amount_paid || 0}"></td><td><input type="number" class="balance readonly" readonly value="0"></td><td style="position:relative;"><button class="delete-row-btn" onclick="deleteRow(this)"><i class="fas fa-times"></i></button></td>`; attachRowEvents(row); calculateRow(row); }
-function attachRowEvents(row) { row.querySelectorAll('.cost-per-day, .days-issued, .amount-paid').forEach(inp => inp.addEventListener('input', () => { calculateRow(row); autoSaveCurrentClient(); })); row.querySelectorAll('.item-description, .date-issued').forEach(inp => inp.addEventListener('input', autoSaveCurrentClient)); }
-function addNewRow() { const tbody = document.getElementById('rentalTableBody'); const row = tbody.insertRow(); const today = new Date().toISOString().split('T')[0]; row.innerHTML = `<td><input type="text" class="item-description" placeholder="Item description"></td><td><input type="date" class="date-issued" value="${today}"></td><td><input type="number" step="0.01" min="0" class="cost-per-day" value="0"></td><td><input type="number" min="1" class="days-issued" value="1"></td><td><input type="number" class="total-cost readonly" readonly value="0"></td><td><input type="number" class="tax-amount readonly" readonly value="0" style="cursor:help;"></td><td><input type="number" step="0.01" min="0" class="amount-paid" value="0"></td><td><input type="number" class="balance readonly" readonly value="0"></td><td style="position:relative;"><button class="delete-row-btn" onclick="deleteRow(this)"><i class="fas fa-times"></i></button></td>`; attachRowEvents(row); calculateRow(row); }
-async function calculateRow(row) { const cost = parseFloat(row.querySelector('.cost-per-day').value) || 0; const days = parseInt(row.querySelector('.days-issued').value) || 0; const paid = parseFloat(row.querySelector('.amount-paid').value) || 0; const total = cost * days; row.querySelector('.total-cost').value = total.toFixed(2); let taxRate = parseFloat(document.getElementById('taxRate').value) || 0; const taxAmount = total * taxRate / 100; const netAmount = total - taxAmount; const taxCell = row.querySelector('.tax-amount'); taxCell.value = taxAmount.toFixed(2); taxCell.title = `Tax: ${taxAmount.toFixed(2)} KES | Net: ${netAmount.toFixed(2)} KES`; const balance = total - paid; row.querySelector('.balance').value = balance.toFixed(2); updateGrandTotals(); }
+// ==================== Company Profile ====================
+async function loadCompanyFromUser() {
+    try {
+        const data = await apiCall('/api/auth/verify');
+        const u = data.user;
+        currentUserEmail = u.email;
+        document.getElementById('companyNameDisplay').innerText = u.company_name || 'Equipment Rental Manager Pro';
+        document.getElementById('phoneDisplay').innerText = u.company_phone || 'Tel: ...';
+        document.getElementById('addressDisplay').innerText = u.company_address || 'P. O. Box ...';
+        document.getElementById('emailDisplay').innerText = u.company_email || '...';
+        document.getElementById('companySignatureName').innerText = u.signature_name || u.company_name || 'Your Company';
+        document.getElementById('companyName').value = u.company_name || '';
+        document.getElementById('companyPhone').value = (u.company_phone || '').replace('Tel: ', '');
+        document.getElementById('companyTaxPin').value = u.company_tax_pin || '';
+        document.getElementById('companyAddress').value = u.company_address || '';
+        document.getElementById('companyEmail').value = u.company_email || '';
+        document.getElementById('taxRate').value = u.tax_rate || 0;
+    } catch (e) { console.error(e); }
+}
+
+async function saveCompanyDetails() {
+    await apiCall('/api/company', {
+        method: 'PUT',
+        body: JSON.stringify({
+            company_name: document.getElementById('companyName').value,
+            company_phone: document.getElementById('companyPhone').value,
+            company_tax_pin: document.getElementById('companyTaxPin').value,
+            company_address: document.getElementById('companyAddress').value,
+            company_email: document.getElementById('companyEmail').value,
+            signature_name: document.getElementById('companyName').value,
+            tax_rate: parseFloat(document.getElementById('taxRate').value) || 0
+        })
+    });
+    await loadCompanyFromUser();
+    toggleSetupForm();
+    showSaveIndicator('Company & Tax saved');
+}
+
+function toggleSetupForm() {
+    const f = document.getElementById('setupForm');
+    f.style.display = f.style.display === 'none' ? 'grid' : 'none';
+}
+
+// ==================== Client Management ====================
+async function loadClientDropdown() {
+    const data = await apiCall('/api/clients');
+    const dropdown = document.getElementById('clientDropdown');
+    dropdown.innerHTML = '<option value="">-- Select Client --</option>';
+    for (const c of data.clients) {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.client_name} (${c.client_phone || 'no phone'})`;
+        dropdown.appendChild(opt);
+    }
+}
+
+async function loadClient() {
+    const id = document.getElementById('clientDropdown').value;
+    if (!id) { currentClientId = null; clearForm(); return; }
+    currentClientId = parseInt(id);
+    const itemsData = await apiCall(`/api/clients/${currentClientId}/items`);
+    const clientsData = await apiCall('/api/clients');
+    const clientInfo = clientsData.clients.find(c => c.id == currentClientId);
+    if (clientInfo) {
+        document.getElementById('clientName').value = clientInfo.client_name || '';
+        document.getElementById('clientPhone').value = clientInfo.client_phone || '';
+        document.getElementById('clientTaxPin').value = clientInfo.client_tax_pin || '';
+        document.getElementById('clientEmail').value = clientInfo.client_email || '';
+        document.getElementById('clientPOB').value = clientInfo.client_pob || '';
+        document.getElementById('clientComment').value = clientInfo.client_comment || '';
+    }
+    const tbody = document.getElementById('rentalTableBody');
+    tbody.innerHTML = '';
+    if (itemsData.items.length === 0) addNewRow();
+    for (const item of itemsData.items) addRowFromItem(item);
+    calculateAll();
+    document.getElementById('currentClientDisplay').innerText = `Current: ${clientInfo?.client_name || 'Unknown'}`;
+}
+
+async function addNewClient() {
+    const clientName = prompt('Enter client/company name:');
+    if (!clientName) return;
+    const newClient = await apiCall('/api/clients', {
+        method: 'POST',
+        body: JSON.stringify({
+            client_name: clientName,
+            client_phone: '',
+            client_tax_pin: '',
+            client_email: '',
+            client_pob: '',
+            client_comment: ''
+        })
+    });
+    await loadClientDropdown();
+    document.getElementById('clientDropdown').value = newClient.id;
+    loadClient();
+}
+
+async function saveCurrentClient(showNotification = true) {
+    const name = document.getElementById('clientName').value.trim();
+    if (!name) { if (showNotification) alert('Client name required'); return false; }
+    if (!currentClientId) {
+        const newClient = await apiCall('/api/clients', {
+            method: 'POST',
+            body: JSON.stringify({
+                client_name: name,
+                client_phone: document.getElementById('clientPhone').value,
+                client_tax_pin: document.getElementById('clientTaxPin').value,
+                client_email: document.getElementById('clientEmail').value,
+                client_pob: document.getElementById('clientPOB').value,
+                client_comment: document.getElementById('clientComment').value
+            })
+        });
+        currentClientId = newClient.id;
+        await loadClientDropdown();
+        document.getElementById('clientDropdown').value = currentClientId;
+    } else {
+        await apiCall(`/api/clients/${currentClientId}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+                client_name: name,
+                client_phone: document.getElementById('clientPhone').value,
+                client_tax_pin: document.getElementById('clientTaxPin').value,
+                client_email: document.getElementById('clientEmail').value,
+                client_pob: document.getElementById('clientPOB').value,
+                client_comment: document.getElementById('clientComment').value
+            })
+        });
+    }
+    const items = [];
+    document.querySelectorAll('#rentalTableBody tr').forEach(row => {
+        items.push({
+            description: row.querySelector('.item-description').value,
+            date_issued: row.querySelector('.date-issued').value,
+            cost_per_day: parseFloat(row.querySelector('.cost-per-day').value) || 0,
+            days_issued: parseInt(row.querySelector('.days-issued').value) || 1,
+            amount_paid: parseFloat(row.querySelector('.amount-paid').value) || 0
+        });
+    });
+    await apiCall(`/api/clients/${currentClientId}/items/bulk`, { method: 'PUT', body: JSON.stringify({ items }) });
+    if (showNotification) showSaveIndicator('Client saved');
+    await loadClientDropdown();
+    return true;
+}
+
+async function deleteCurrentClient() {
+    if (!currentClientId) return alert('Select a client');
+    if (!confirm('Delete client and all data?')) return;
+    await apiCall(`/api/clients/${currentClientId}`, { method: 'DELETE' });
+    currentClientId = null;
+    clearForm();
+    await loadClientDropdown();
+    showSaveIndicator('Client deleted');
+}
+
+function clearForm() {
+    document.getElementById('clientName').value = '';
+    document.getElementById('clientPhone').value = '';
+    document.getElementById('clientTaxPin').value = '';
+    document.getElementById('clientEmail').value = '';
+    document.getElementById('clientPOB').value = '';
+    document.getElementById('clientComment').value = '';
+    document.getElementById('rentalTableBody').innerHTML = '';
+    addNewRow();
+    calculateAll();
+    currentClientId = null;
+    document.getElementById('currentClientDisplay').innerText = 'No client selected';
+    document.getElementById('clientDropdown').value = '';
+}
+
+function clearCurrentForm() { if (confirm('Clear form?')) clearForm(); }
+
+// ==================== Table Functions ====================
+function addRowFromItem(item) {
+    const tbody = document.getElementById('rentalTableBody');
+    const row = tbody.insertRow();
+    const total = (item.cost_per_day * item.days_issued);
+    const tax = item.tax_amount || 0;
+    const net = total - tax;
+    const tooltip = `Tax: ${tax.toFixed(2)} KES | Net: ${net.toFixed(2)} KES`;
+    row.innerHTML = `
+        <td><input type="text" class="item-description" value="${escapeHtml(item.description || '')}"></td>
+        <td><input type="date" class="date-issued" value="${item.date_issued || ''}"></td>
+        <td><input type="number" step="0.01" min="0" class="cost-per-day" value="${item.cost_per_day || 0}"></td>
+        <td><input type="number" min="1" class="days-issued" value="${item.days_issued || 1}"></td>
+        <td><input type="number" class="total-cost readonly" readonly value="${total.toFixed(2)}"></td>
+        <td><input type="number" class="tax-amount readonly" readonly value="${tax.toFixed(2)}" style="cursor:help;" title="${tooltip}"></td>
+        <td><input type="number" step="0.01" min="0" class="amount-paid" value="${item.amount_paid || 0}"></td>
+        <td><input type="number" class="balance readonly" readonly value="0"></td>
+        <td style="position:relative;"><button class="delete-row-btn" onclick="deleteRow(this)"><i class="fas fa-times"></i></button></td>
+    `;
+    attachRowEvents(row);
+    calculateRow(row);
+}
+
+function attachRowEvents(row) {
+    row.querySelectorAll('.cost-per-day, .days-issued, .amount-paid').forEach(inp => inp.addEventListener('input', () => { calculateRow(row); autoSaveCurrentClient(); }));
+    row.querySelectorAll('.item-description, .date-issued').forEach(inp => inp.addEventListener('input', autoSaveCurrentClient));
+}
+
+function addNewRow() {
+    const tbody = document.getElementById('rentalTableBody');
+    const row = tbody.insertRow();
+    const today = new Date().toISOString().split('T')[0];
+    row.innerHTML = `
+        <td><input type="text" class="item-description" placeholder="Item description"></td>
+        <td><input type="date" class="date-issued" value="${today}"></td>
+        <td><input type="number" step="0.01" min="0" class="cost-per-day" value="0"></td>
+        <td><input type="number" min="1" class="days-issued" value="1"></td>
+        <td><input type="number" class="total-cost readonly" readonly value="0"></td>
+        <td><input type="number" class="tax-amount readonly" readonly value="0" style="cursor:help;"></td>
+        <td><input type="number" step="0.01" min="0" class="amount-paid" value="0"></td>
+        <td><input type="number" class="balance readonly" readonly value="0"></td>
+        <td style="position:relative;"><button class="delete-row-btn" onclick="deleteRow(this)"><i class="fas fa-times"></i></button></td>
+    `;
+    attachRowEvents(row);
+    calculateRow(row);
+    autoSaveCurrentClient();
+}
+
+async function calculateRow(row) {
+    const cost = parseFloat(row.querySelector('.cost-per-day').value) || 0;
+    const days = parseInt(row.querySelector('.days-issued').value) || 0;
+    const paid = parseFloat(row.querySelector('.amount-paid').value) || 0;
+    const total = cost * days;
+    row.querySelector('.total-cost').value = total.toFixed(2);
+    let taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+    const taxAmount = total * taxRate / 100;
+    const netAmount = total - taxAmount;
+    const taxCell = row.querySelector('.tax-amount');
+    taxCell.value = taxAmount.toFixed(2);
+    taxCell.title = `Tax: ${taxAmount.toFixed(2)} KES | Net: ${netAmount.toFixed(2)} KES`;
+    const balance = total - paid;
+    row.querySelector('.balance').value = balance.toFixed(2);
+    updateGrandTotals();
+}
+
 function calculateAll() { document.querySelectorAll('#rentalTableBody tr').forEach(r => calculateRow(r)); }
-function updateGrandTotals() { let total=0, tax=0, paid=0, bal=0; document.querySelectorAll('#rentalTableBody tr').forEach(r => { total += parseFloat(r.querySelector('.total-cost').value) || 0; tax += parseFloat(r.querySelector('.tax-amount').value) || 0; paid += parseFloat(r.querySelector('.amount-paid').value) || 0; bal += parseFloat(r.querySelector('.balance').value) || 0; }); document.getElementById('grandTotal').innerText = total.toFixed(2); document.getElementById('grandTax').innerText = tax.toFixed(2); document.getElementById('grandPaid').innerText = paid.toFixed(2); document.getElementById('grandBalance').innerText = bal.toFixed(2); }
-async function saveCurrentClient(showNotification = true) { const name = document.getElementById('clientName').value.trim(); if (!name) { if (showNotification) alert('Client name required'); return false; } if (!currentClientId) { const newClient = await apiCall('/api/clients', { method:'POST', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) }); currentClientId = newClient.id; await loadClientDropdown(); document.getElementById('clientDropdown').value = currentClientId; } else { await apiCall(`/api/clients/${currentClientId}`, { method:'PUT', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) }); } const items = []; document.querySelectorAll('#rentalTableBody tr').forEach(row => { items.push({ description: row.querySelector('.item-description').value, date_issued: row.querySelector('.date-issued').value, cost_per_day: parseFloat(row.querySelector('.cost-per-day').value) || 0, days_issued: parseInt(row.querySelector('.days-issued').value) || 1, amount_paid: parseFloat(row.querySelector('.amount-paid').value) || 0 }); }); await apiCall(`/api/clients/${currentClientId}/items/bulk`, { method:'PUT', body: JSON.stringify({ items }) }); if (showNotification) showSaveIndicator('Client saved'); await loadClientDropdown(); return true; }
-function autoSaveCurrentClient() { if (autoSaveTimeout) clearTimeout(autoSaveTimeout); autoSaveTimeout = setTimeout(() => { if (currentClientId) saveCurrentClient(false); }, 1500); }
-async function deleteCurrentClient() { if (!currentClientId) return alert('Select a client'); if (!confirm('Delete client and all data?')) return; await apiCall(`/api/clients/${currentClientId}`, { method:'DELETE' }); currentClientId = null; clearForm(); await loadClientDropdown(); showSaveIndicator('Client deleted'); }
-function deleteRow(btn) { const row = btn.closest('tr'); if (document.querySelectorAll('#rentalTableBody tr').length > 1) row.remove(); else clearForm(); calculateAll(); autoSaveCurrentClient(); }
-function clearForm() { document.getElementById('clientName').value = ''; document.getElementById('clientPhone').value = ''; document.getElementById('clientEmail').value = ''; document.getElementById('clientPOB').value = ''; document.getElementById('clientComment').value = ''; document.getElementById('rentalTableBody').innerHTML = ''; addNewRow(); calculateAll(); currentClientId = null; document.getElementById('currentClientDisplay').innerText = 'No client selected'; document.getElementById('clientDropdown').value = ''; }
-function clearCurrentForm() { if(confirm('Clear form?')) clearForm(); }
+
+function updateGrandTotals() {
+    let total = 0, tax = 0, paid = 0, bal = 0;
+    document.querySelectorAll('#rentalTableBody tr').forEach(r => {
+        total += parseFloat(r.querySelector('.total-cost').value) || 0;
+        tax += parseFloat(r.querySelector('.tax-amount').value) || 0;
+        paid += parseFloat(r.querySelector('.amount-paid').value) || 0;
+        bal += parseFloat(r.querySelector('.balance').value) || 0;
+    });
+    document.getElementById('grandTotal').innerText = total.toFixed(2);
+    document.getElementById('grandTax').innerText = tax.toFixed(2);
+    document.getElementById('grandPaid').innerText = paid.toFixed(2);
+    document.getElementById('grandBalance').innerText = bal.toFixed(2);
+}
+
+function deleteRow(btn) {
+    const row = btn.closest('tr');
+    if (document.querySelectorAll('#rentalTableBody tr').length > 1) row.remove();
+    else clearForm();
+    calculateAll();
+    autoSaveCurrentClient();
+}
+
+function autoSaveCurrentClient() {
+    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => { if (currentClientId) saveCurrentClient(false); }, 1500);
+}
+
 function saveAsPDF() { window.print(); }
-function showSaveIndicator(msg) { const ind=document.getElementById('saveIndicator'); ind.innerText=msg; ind.style.display='block'; setTimeout(()=>ind.style.display='none',2000); }
-function escapeHtml(str) { return str.replace(/[&<>]/g, m=>({ '&':'&amp;', '<':'&lt;', '>':'&gt;' }[m])); }
 
-// ==================== TAX HISTORY AND RESET ====================
-async function showTaxHistory() { try { const data = await apiCall('/api/tax-history'); let html = '<div style="max-height:500px; overflow:auto;"><table style="width:100%; border-collapse:collapse;"><tr><th>Client</th><th>Item</th><th>Total Cost</th><th>Tax Rate</th><th>Tax Amount</th><th>Net Amount</th></tr>'; for (const item of data.history) { const net = item.cost_per_day * item.days_issued - item.tax_amount; html += `<tr><td>${escapeHtml(item.client_name)}</td><td>${escapeHtml(item.description)}</td><td>${(item.cost_per_day*item.days_issued).toFixed(2)}</td><td>${item.tax_rate}%</td><td>${item.tax_amount.toFixed(2)}</td><td>${net.toFixed(2)}</td></tr>`; } html += '</table></div><div style="margin-top:20px;"><button id="resetTestingDataBtn" style="background:#dc2626; color:white; padding:10px 20px; border:none; border-radius:40px;">Reset Testing Data (Delete All Clients/Items)</button></div>'; const modalDiv = document.createElement('div'); modalDiv.className = 'modal'; modalDiv.innerHTML = `<div class="modal-content" style="max-width:90%; max-height:80%; overflow:auto;"><h2>Tax History</h2>${html}<button id="closeTaxModal" style="margin-top:20px;">Close</button></div>`; document.body.appendChild(modalDiv); document.getElementById('closeTaxModal').onclick = () => modalDiv.remove(); document.getElementById('resetTestingDataBtn').onclick = async () => { if (confirm('WARNING: Deletes ALL clients/items. Cannot be undone. Continue?')) { await apiCall('/api/reset-testing-data', { method:'POST' }); alert('All testing data reset. Reloading...'); window.location.reload(); } }; } catch(err) { alert('Error: '+err.message); } }
+// ==================== Tax History ====================
+async function showTaxHistory() {
+    try {
+        const data = await apiCall('/api/tax-history');
+        let html = '<div style="max-height:500px; overflow:auto;"><table style="width:100%; border-collapse:collapse;"><tr><th>Client</th><th>Item</th><th>Total Cost</th><th>Tax Rate</th><th>Tax Amount</th><th>Net Amount</th></tr>';
+        for (const item of data.history) {
+            const net = item.cost_per_day * item.days_issued - item.tax_amount;
+            html += `<tr>
+                <td>${escapeHtml(item.client_name)}</td>
+                <td>${escapeHtml(item.description)}</td>
+                <td>${(item.cost_per_day * item.days_issued).toFixed(2)}</td>
+                <td>${item.tax_rate}%</td>
+                <td>${item.tax_amount.toFixed(2)}</td>
+                <td>${net.toFixed(2)}</td>
+            </tr>`;
+        }
+        html += '<tr></div><div style="margin-top:20px;"><button id="resetTestingDataBtn" style="background:#dc2626; color:white; padding:10px 20px; border:none; border-radius:40px;">Reset Testing Data (Delete All Clients/Items)</button></div>';
+        const modalDiv = document.createElement('div');
+        modalDiv.className = 'modal';
+        modalDiv.innerHTML = `<div class="modal-content" style="max-width:90%; max-height:80%; overflow:auto;"><h2>Tax History</h2>${html}<button id="closeTaxModal" style="margin-top:20px;">Close</button></div>`;
+        document.body.appendChild(modalDiv);
+        document.getElementById('closeTaxModal').onclick = () => modalDiv.remove();
+        document.getElementById('resetTestingDataBtn').onclick = async () => {
+            if (confirm('WARNING: Deletes ALL clients/items. Cannot be undone. Continue?')) {
+                await apiCall('/api/reset-testing-data', { method: 'POST' });
+                alert('All testing data reset. Reloading...');
+                window.location.reload();
+            }
+        };
+    } catch (err) { alert('Error: ' + err.message); }
+}
 
-// ==================== EXPORT / IMPORT ====================
-async function exportToMaster() { const data = await apiCall('/api/export-data'); downloadJSON(data, `master_backup_${new Date().toISOString().slice(0,10)}.json`); }
+// ==================== Export/Import Functions ====================
+async function exportToMaster() { const data = await apiCall('/api/export-data'); downloadJSON(data, `master_backup_${new Date().toISOString().slice(0, 10)}.json`); }
 async function backupAllData() { exportToMaster(); }
-async function importFromClients() { const input = document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange = async (e) => { const file = e.target.files[0]; if(!file) return; const text = await file.text(); const data = JSON.parse(text); if(data.clients) await apiCall('/api/import-data', { method:'POST', body: JSON.stringify({ clients: data.clients }) }); await loadClientDropdown(); alert('Import complete'); }; input.click(); }
-async function createClientCopy() { if(!currentClientId) return alert('Select a client'); const clients = await apiCall('/api/clients'); const client = clients.clients.find(c=>c.id==currentClientId); const items = await apiCall(`/api/clients/${currentClientId}/items`); const copy = { clients: [{ ...client, items: items.items }] }; downloadJSON(copy, `client_${client.client_name}.json`); }
-function downloadJSON(obj, filename) { const blob = new Blob([JSON.stringify(obj, null,2)], {type:'application/json'}); const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
+async function importFromClients() {
+    const input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0]; if (!file) return;
+        const text = await file.text(); const data = JSON.parse(text);
+        if (data.clients) await apiCall('/api/import-data', { method: 'POST', body: JSON.stringify({ clients: data.clients }) });
+        await loadClientDropdown(); alert('Import complete');
+    }; input.click();
+}
+async function createClientCopy() {
+    if (!currentClientId) return alert('Select a client');
+    const clients = await apiCall('/api/clients'); const client = clients.clients.find(c => c.id == currentClientId);
+    const items = await apiCall(`/api/clients/${currentClientId}/items`); const copy = { clients: [{ ...client, items: items.items }] };
+    downloadJSON(copy, `client_${client.client_name}.json`);
+}
 
-// ==================== CSV / EXCEL IMPORT FIXED ====================
+// ==================== CSV/Excel Import (FIXED for MM/DD/YYYY) ====================
+function convertToYYYYMMDD(dateStr) {
+    if (!dateStr) return '';
+    dateStr = dateStr.toString().trim();
+    
+    // Already YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    
+    // Try to parse as MM/DD/YYYY or MM-DD-YYYY
+    let match = dateStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
+    if (match) {
+        // Assume MM/DD/YYYY format
+        return `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
+    }
+    
+    return dateStr;
+}
+
 async function handleFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
+
     function parseCSV(text) {
         if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-        return lines.map(line => {
-            const regex = /("([^"]*)"|([^,]*))(,|$)/g;
+        const rows = [];
+        for (const line of lines) {
             const row = [];
-            let match;
-            while ((match = regex.exec(line)) !== null) {
-                row.push(match[2] !== undefined ? match[2] : (match[3] !== undefined ? match[3] : ''));
-                if (match[0].endsWith(',')) continue;
-                break;
+            let inQuote = false;
+            let current = '';
+            for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') {
+                    inQuote = !inQuote;
+                } else if (ch === ',' && !inQuote) {
+                    row.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
             }
-            return row;
-        });
+            row.push(current.trim());
+            for (let j = 0; j < row.length; j++) {
+                row[j] = row[j].replace(/^"|"$/g, '');
+            }
+            if (row.length >= 5) {
+                rows.push(row.slice(0, 5));
+            }
+        }
+        return rows;
     }
+
     const reader = new FileReader();
     reader.onload = async (e) => {
         let rows = [];
@@ -395,89 +882,164 @@ async function handleFileSelect(input) {
                 const data = new Uint8Array(e.target.result);
                 const wb = XLSX.read(data, { type: 'array' });
                 const sheet = wb.Sheets[wb.SheetNames[0]];
-                rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+                rows = rawRows.filter(r => r.length >= 5).map(r => r.slice(0, 5));
             }
         } catch (err) {
             alert('Error reading file: ' + err.message);
             return;
         }
+
         if (!rows.length || rows.length < 2) {
             alert('No data rows found.');
             return;
         }
-        const dataRows = rows.slice(1).filter(r => r.length >= 5 && r.some(cell => cell && cell.toString().trim() !== ''));
+
+        const dataRows = rows.slice(1);
         if (dataRows.length === 0) {
-            alert('No valid rows (need at least 5 columns).');
+            alert('No valid data rows.');
             return;
         }
-        let clientName = document.getElementById('clientName').value.trim();
-        if (!clientName) {
-            clientName = prompt('Enter client/company name to save imported items:');
-            if (!clientName) {
-                alert('Import cancelled – client name required.');
-                input.value = '';
-                return;
-            }
-            document.getElementById('clientName').value = clientName;
-        }
+
         if (!currentClientId) {
-            try {
-                const newClient = await apiCall('/api/clients', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        client_name: clientName,
-                        client_phone: document.getElementById('clientPhone').value,
-                        client_email: document.getElementById('clientEmail').value,
-                        client_pob: document.getElementById('clientPOB').value,
-                        client_comment: document.getElementById('clientComment').value
-                    })
-                });
-                currentClientId = newClient.id;
-                await loadClientDropdown();
-                document.getElementById('clientDropdown').value = currentClientId;
-            } catch (err) {
-                alert('Failed to create client: ' + err.message);
-                return;
-            }
+            alert('Please select a client BEFORE importing items.');
+            input.value = '';
+            return;
         }
+
         const tbody = document.getElementById('rentalTableBody');
         tbody.innerHTML = '';
+        let importedCount = 0;
+        
         for (let i = 0; i < dataRows.length; i++) {
+            const rowData = dataRows[i];
+            if (rowData.length < 5) continue;
+            
             addNewRow();
             const row = tbody.lastChild;
-            const rowData = dataRows[i];
-            if (rowData[0] !== undefined && rowData[0].toString().trim() !== '') {
-                row.querySelector('.item-description').value = rowData[0].toString().trim();
+            
+            // Description - column 0
+            if (rowData[0]) {
+                row.querySelector('.item-description').value = rowData[0];
             }
-            if (rowData[1]) row.querySelector('.date-issued').value = rowData[1];
-            if (rowData[2]) row.querySelector('.cost-per-day').value = parseFloat(rowData[2]) || 0;
-            if (rowData[3]) row.querySelector('.days-issued').value = parseInt(rowData[3]) || 1;
-            if (rowData[4]) row.querySelector('.amount-paid').value = parseFloat(rowData[4]) || 0;
+            
+            // Date - column 1 (convert MM/DD/YYYY to YYYY-MM-DD)
+            if (rowData[1]) {
+                const convertedDate = convertToYYYYMMDD(rowData[1]);
+                row.querySelector('.date-issued').value = convertedDate;
+                console.log(`Date conversion: ${rowData[1]} -> ${convertedDate}`);
+            }
+            
+            // Cost - column 2
+            if (rowData[2]) {
+                row.querySelector('.cost-per-day').value = parseFloat(rowData[2]) || 0;
+            }
+            
+            // Quantity - column 3
+            if (rowData[3]) {
+                row.querySelector('.days-issued').value = parseInt(rowData[3]) || 1;
+            }
+            
+            // Amount Paid - column 4
+            if (rowData[4]) {
+                row.querySelector('.amount-paid').value = parseFloat(rowData[4]) || 0;
+            }
+            
             calculateRow(row);
+            importedCount++;
         }
         calculateAll();
+        
         try {
             await saveCurrentClient(false);
-            showSaveIndicator(`Imported ${dataRows.length} items and saved.`);
+            showSaveIndicator(`Imported ${importedCount} items and saved.`);
             await loadClient();
         } catch (err) {
             alert('Error saving imported items: ' + err.message);
         }
     };
-    if (file.name.endsWith('.csv')) reader.readAsText(file, 'UTF-8');
-    else reader.readAsArrayBuffer(file);
+    
+    if (file.name.endsWith('.csv')) {
+        reader.readAsText(file, 'UTF-8');
+    } else {
+        reader.readAsArrayBuffer(file);
+    }
 }
 
-function importSampleCSV() { downloadBlob("Description,Date Issued,Cost per Day,Days,Amount Paid\nExcavator,2024-01-15,15000,7,50000", "sample.csv", "text/csv"); }
-function downloadBlob(content, filename, mime) { const blob=new Blob([content], {type:mime}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); URL.revokeObjectURL(a.href); }
-function exportToCSV() { let csv = "Description,Date Issued,Cost per Day,Days,Amount Paid\n"; document.querySelectorAll('#rentalTableBody tr').forEach(r => { csv += `"${r.querySelector('.item-description').value}",${r.querySelector('.date-issued').value},${r.querySelector('.cost-per-day').value},${r.querySelector('.days-issued').value},${r.querySelector('.amount-paid').value}\n`; }); downloadBlob(csv, "rental_items.csv", "text/csv"); }
-function exportToExcel() { const data = [["Description","Date Issued","Cost per Day","Days","Amount Paid"]]; document.querySelectorAll('#rentalTableBody tr').forEach(r => { data.push([r.querySelector('.item-description').value, r.querySelector('.date-issued').value, r.querySelector('.cost-per-day').value, r.querySelector('.days-issued').value, r.querySelector('.amount-paid').value]); }); const ws = XLSX.utils.aoa_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Rental Items"); XLSX.writeFile(wb, "rental_items.xlsx"); }
-function exportToJSON() { const items = []; document.querySelectorAll('#rentalTableBody tr').forEach(r => { items.push({ description: r.querySelector('.item-description').value, date_issued: r.querySelector('.date-issued').value, cost_per_day: r.querySelector('.cost-per-day').value, days: r.querySelector('.days-issued').value, amount_paid: r.querySelector('.amount-paid').value }); }); downloadJSON(items, "rental_items.json"); }
-function showPrivacy() { alert("Privacy Policy: We collect client and rental data only for business purposes. Data is stored securely and not shared with third parties. Contact safarisoftwares@gmail.com for concerns."); }
-function showTerms() { alert("Terms of Use: This software is provided as-is. Safari Softwares is not liable for any misuse. You agree to use this system lawfully."); }
+function importSampleCSV() {
+    downloadBlob("Description,Date Issued,Cost,Quantity,Amount Paid\nExcavator,2024-01-15,15000,7,50000", "sample.csv", "text/csv");
+}
 
-// ==================== INITIAL CHECK ====================
-if (token) { fetch(`${API_BASE}/api/auth/verify`, { headers: { 'Authorization': `Bearer ${token}` } }).then(res => { if (res.ok) { document.getElementById('loginModal').style.display = 'none'; document.getElementById('mainApp').style.display = 'block'; loadCompanyFromUser(); loadClientDropdown(); clearForm(); return res.json(); } else throw new Error(); }).then(data => { currentUserRole = data.user.role; if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex'; }).catch(() => { localStorage.removeItem('token'); token = null; document.getElementById('loginModal').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none'; }); } else { document.getElementById('loginModal').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none'; }
+// ==================== Export Functions ====================
+function exportToCSV() {
+    let csv = "Description,Date Issued,Cost,Quantity,Amount Paid\n";
+    document.querySelectorAll('#rentalTableBody tr').forEach(r => {
+        csv += `"${r.querySelector('.item-description').value}",${r.querySelector('.date-issued').value},${r.querySelector('.cost-per-day').value},${r.querySelector('.days-issued').value},${r.querySelector('.amount-paid').value}\n`;
+    });
+    const clientName = document.getElementById('clientName').value.trim().replace(/[^a-z0-9]/gi, '_') || 'all_items';
+    const filename = `rental_items_${clientName}_${new Date().toISOString().slice(0, 10)}.csv`;
+    downloadBlob(csv, filename, "text/csv");
+}
+
+function exportToExcel() {
+    const data = [["Description", "Date Issued", "Cost", "Quantity", "Amount Paid"]];
+    document.querySelectorAll('#rentalTableBody tr').forEach(r => {
+        data.push([
+            r.querySelector('.item-description').value,
+            r.querySelector('.date-issued').value,
+            r.querySelector('.cost-per-day').value,
+            r.querySelector('.days-issued').value,
+            r.querySelector('.amount-paid').value
+        ]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Rental Items");
+    const clientName = document.getElementById('clientName').value.trim().replace(/[^a-z0-9]/gi, '_') || 'all_items';
+    const filename = `rental_items_${clientName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    XLSX.writeFile(wb, filename);
+}
+
+function exportToJSON() {
+    const items = [];
+    document.querySelectorAll('#rentalTableBody tr').forEach(r => {
+        items.push({
+            description: r.querySelector('.item-description').value,
+            date_issued: r.querySelector('.date-issued').value,
+            cost: r.querySelector('.cost-per-day').value,
+            quantity: r.querySelector('.days-issued').value,
+            amount_paid: r.querySelector('.amount-paid').value
+        });
+    });
+    const clientName = document.getElementById('clientName').value.trim().replace(/[^a-z0-9]/gi, '_') || 'all_items';
+    const filename = `rental_items_${clientName}_${new Date().toISOString().slice(0, 10)}.json`;
+    downloadJSON(items, filename);
+}
+
+// ==================== Initial Load ====================
+if (token) {
+    fetch(`${API_BASE}/api/auth/verify`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(res => {
+            if (res.ok) {
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loadCompanyFromUser(); loadClientDropdown(); clearForm();
+                return res.json();
+            } else throw new Error();
+        })
+        .then(data => {
+            currentUserRole = data.user.role;
+            if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex';
+        })
+        .catch(() => {
+            localStorage.removeItem('token'); token = null;
+            document.getElementById('loginModal').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+        });
+} else {
+    document.getElementById('loginModal').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+}
 </script>
 </body>
 </html>
