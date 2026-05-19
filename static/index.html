@@ -198,6 +198,7 @@
             <div class="company-details">
                 <div class="detail-item"><i class="fas fa-map-marker-alt"></i><span id="addressDisplay"></span></div>
                 <div class="detail-item"><i class="fas fa-phone"></i><span id="phoneDisplay"></span></div>
+                <div class="detail-item"><i class="fas fa-file-invoice"></i><span id="taxPinDisplay"></span></div>
                 <div class="detail-item"><i class="fas fa-envelope"></i><span id="emailDisplay"></span></div>
             </div>
         </div>
@@ -267,7 +268,7 @@
                             <td id="grandPaid">0.00</td>
                             <td id="grandBalance">0.00</td>
                             <td></td>
-                        </tr>
+                        </table>
                     </tfoot>
                 </table>
             </div>
@@ -475,7 +476,7 @@ document.getElementById('adminDashboardBtn').onclick = async () => {
                 </td>
             </tr>`;
         }
-        html += '</table>';
+        html += '<tr>';
         container.innerHTML = html;
         document.getElementById('adminModal').style.display = 'flex';
     } catch (err) { alert(err.message); }
@@ -518,6 +519,8 @@ async function loadCompanyFromUser() {
         document.getElementById('companyAddress').value = u.company_address || '';
         document.getElementById('companyEmail').value = u.company_email || '';
         document.getElementById('taxRate').value = u.tax_rate || 0;
+        // Set the Tax PIN display in the header
+        document.getElementById('taxPinDisplay').innerText = u.company_tax_pin ? `Tax PIN: ${u.company_tax_pin}` : 'Tax PIN: Not set';
     } catch (e) { console.error(e); }
 }
 
@@ -785,7 +788,7 @@ async function showTaxHistory() {
                 <td>${net.toFixed(2)}</td>
             </tr>`;
         }
-        html += '<tr></div><div style="margin-top:20px;"><button id="resetTestingDataBtn" style="background:#dc2626; color:white; padding:10px 20px; border:none; border-radius:40px;">Reset Testing Data (Delete All Clients/Items)</button></div>';
+        html += '</table></div><div style="margin-top:20px;"><button id="resetTestingDataBtn" style="background:#dc2626; color:white; padding:10px 20px; border:none; border-radius:40px;">Reset Testing Data (Delete All Clients/Items)</button></div>';
         const modalDiv = document.createElement('div');
         modalDiv.className = 'modal';
         modalDiv.innerHTML = `<div class="modal-content" style="max-width:90%; max-height:80%; overflow:auto;"><h2>Tax History</h2>${html}<button id="closeTaxModal" style="margin-top:20px;">Close</button></div>`;
