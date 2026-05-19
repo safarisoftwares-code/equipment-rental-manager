@@ -152,7 +152,73 @@
                 width: auto;
             }
         }
-        @media print { .no-print { display:none !important; } body { background:white; } .header, .footer { position: static; } }
+        
+        /* ========== FIXED PRINT STYLES – client info wraps properly ========== */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; margin: 0; padding: 0; }
+            .header, .footer { position: static; }
+            
+            .company-details {
+                display: block !important;
+                text-align: center;
+            }
+            .detail-item {
+                display: inline-block !important;
+                margin: 0 8px;
+                white-space: normal;
+                word-break: keep-all;
+            }
+            
+            .client-info-section {
+                display: block !important;
+                margin: 15px 0;
+                padding: 0;
+                border: none;
+            }
+            .client-field {
+                width: 100% !important;
+                margin-bottom: 10px;
+                page-break-inside: avoid;
+            }
+            .client-field label {
+                font-weight: bold;
+                display: inline-block;
+                width: 130px;
+                vertical-align: top;
+            }
+            .client-field .underline-input {
+                display: inline-block;
+                width: calc(100% - 140px);
+                border: none;
+                border-bottom: 1px solid #000;
+                padding: 0 0 2px 0;
+                background: transparent;
+            }
+            
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            th, td {
+                word-break: break-word;
+                white-space: normal;
+                border: 1px solid #ccc;
+                padding: 6px;
+            }
+            .total-row td {
+                font-weight: bold;
+            }
+            
+            .comment-section, .form-footer {
+                margin-top: 20px;
+            }
+            .signature-area {
+                border-top: 1px solid #000;
+                margin-top: 40px;
+                padding-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -268,7 +334,7 @@
                             <td id="grandPaid">0.00</td>
                             <td id="grandBalance">0.00</td>
                             <td></td>
-                        </table>
+                        </tr>
                     </tfoot>
                 </table>
             </div>
@@ -473,10 +539,10 @@ document.getElementById('adminDashboardBtn').onclick = async () => {
                 <td>
                     <button class="btn btn-small" onclick="adminResetPassword('${user.email}', ${user.id})">Reset Pass</button>
                     ${user.is_active ? `<button class="btn btn-small btn-danger" onclick="adminSuspendUser(${user.id}, '${user.email}')">Suspend</button>` : `<button class="btn btn-small btn-success" onclick="adminActivateUser(${user.id}, '${user.email}')">Activate</button>`}
-                </td>
-            </tr>`;
+                <\/td>
+            <\/tr>`;
         }
-        html += '<tr>';
+        html += '<\/table>';
         container.innerHTML = html;
         document.getElementById('adminModal').style.display = 'flex';
     } catch (err) { alert(err.message); }
@@ -709,8 +775,8 @@ function addNewRow() {
     const row = tbody.insertRow();
     const today = new Date().toISOString().split('T')[0];
     row.innerHTML = `
-        <td><input type="text" class="item-description" placeholder="Item description"></td>
-        <td><input type="date" class="date-issued" value="${today}"></td>
+        <tr><input type="text" class="item-description" placeholder="Item description"></td>
+        <tr><input type="date" class="date-issued" value="${today}"></td>
         <td><input type="number" step="0.01" min="0" class="cost-per-day" value="0"></td>
         <td><input type="number" min="1" class="days-issued" value="1"></td>
         <td><input type="number" class="total-cost readonly" readonly value="0"></td>
