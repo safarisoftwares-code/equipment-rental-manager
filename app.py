@@ -4,6 +4,7 @@ import sqlite3
 import bcrypt
 import jwt
 import datetime
+from urllib.parse import urlparse
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
@@ -12,17 +13,22 @@ app = Flask(__name__, static_folder='static')
 CORS(app)
 SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
 
-# ------------------------------------------------------------------
-# Database setup: PostgreSQL on Render (via pg8000) or SQLite locally
-# ------------------------------------------------------------------
 DATABASE_URL = os.environ.get('DATABASE_URL')
 IS_RENDER = bool(DATABASE_URL)
 
 if IS_RENDER:
     import pg8000
     def get_db():
-        conn = pg8000.connect(dsn=DATABASE_URL)
-        return conn
+        # Parse DATABASE_URL (postgresql://user:pass@host:port/dbname)
+        url = urlparse(DATABASE_URL)
+        conn_params = {
+            'user': url.username,
+            'password': url.password,
+            'host': url.hostname,
+            'port': url.port or 5432,
+            'database': url.path[1:] if url.path else 'postgres'
+        }
+        return pg8000.connect(**conn_params)
 else:
     DATABASE = 'data/rental.db'
     os.makedirs('data', exist_ok=True)
