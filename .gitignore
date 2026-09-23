@@ -30,3 +30,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Environment variants - never commit
+.env*
+*.env
+*.backup
+*.bak
