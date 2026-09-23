@@ -174,19 +174,9 @@
         #adminModal .modal-content h2 { color: #1e3c72 !important; }
         #adminModal .modal-content button { background: #2563eb !important; }
 
-        @media (max-width: 768px) {
+                @media (max-width: 768px) {
             .form-container { padding: 10px; }
-            .update-controls { flex-wrap: wrap; justify-content: flex-end; gap: 6px; top: 10px; right: 10px; }
             .top-btn, .dropdown-btn { font-size: 0.7rem; padding: 4px 10px; }
-            .client-management { flex-direction: column; align-items: stretch; }
-            .client-actions { justify-content: space-between; }
-            .import-export-grid { grid-template-columns: 1fr; }
-            .actions { flex-direction: column; }
-            .btn { width: 100%; }
-            .table-wrapper { overflow-x: auto; }
-            table { min-width: 750px; }
-            th, td { font-size: 0.75rem; padding: 6px 6px; }
-            #rentalTable td input { padding: 6px 4px; font-size: 12px; }
 
             /* ===== CLEAN MOBILE HEADER — excavator above, Renta below ===== */
             .header { padding: 16px 12px; }
@@ -197,6 +187,122 @@
             .header-logo { height: 56px !important; width: 56px !important; }
             .company-name { font-size: 24px !important; }
             .company-details { display: none !important; }
+
+            /* ===== COMPANY SETTINGS FORM — single column, thinner ===== */
+            .setup-form {
+                grid-template-columns: 1fr !important;
+                gap: 6px !important;
+                padding: 10px !important;
+            }
+            .setup-field { margin-bottom: 0 !important; }
+            .setup-field label {
+                font-size: 0.75rem !important;
+                margin-bottom: 2px !important;
+                color: #7a5c1a !important;
+            }
+            .setup-input {
+                padding: 5px 8px !important;
+                font-size: 0.85rem !important;
+                border-width: 1.5px !important;
+                border-radius: 8px !important;
+            }
+            .setup-form .btn {
+                padding: 6px 10px !important;
+                font-size: 0.8rem !important;
+            }
+            .setup-header h3 { font-size: 1rem !important; }
+            .setup-toggle { padding: 5px 12px !important; font-size: 0.8rem !important; }
+
+            /* ===== CLIENT ACTION BUTTONS — 3 equal tabs, full width ===== */
+            .client-management {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+                padding: 10px !important;
+            }
+            .client-selector { width: 100% !important; }
+            .client-actions {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr 1fr !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+            .client-actions .btn {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 9px 6px !important;
+                font-size: 0.75rem !important;
+                border-radius: 10px !important;
+                min-width: 0 !important;
+                flex: none !important;
+            }
+
+            /* ===== IMPORT / EXPORT — equal tabs ===== */
+            .import-export-grid {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+            .import-section, .export-section { width: 100% !important; }
+
+            .import-section h5, .export-section h5 {
+                font-size: 0.85rem !important;
+                margin-bottom: 6px !important;
+            }
+
+            /* Import: 2 buttons in a row */
+            .import-section .btn {
+                width: auto !important;
+                flex: 1 1 0 !important;
+                padding: 8px 6px !important;
+                font-size: 0.72rem !important;
+                border-radius: 10px !important;
+                margin: 0 !important;
+            }
+            .import-section {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px !important;
+            }
+            .import-section h5 { grid-column: 1 / -1; }
+
+            /* Export: 4 buttons in a row */
+            .export-section {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr 1fr 1fr !important;
+                gap: 6px !important;
+            }
+            .export-section h5 { grid-column: 1 / -1; }
+            .export-section .btn {
+                width: 100% !important;
+                padding: 8px 2px !important;
+                font-size: 0.68rem !important;
+                border-radius: 10px !important;
+                margin: 0 !important;
+            }
+
+            /* ===== Table / other ===== */
+            .table-wrapper { overflow-x: auto; }
+            table { min-width: 750px; }
+            th, td { font-size: 0.75rem; padding: 6px 6px; }
+            #rentalTable td input { padding: 6px 4px; font-size: 12px; }
+
+            /* Other action buttons (Add Item, Calculate, etc.) */
+            .actions { flex-direction: column; }
+            .actions .btn { width: 100%; }
+
+            /* Client info section — smaller */
+            .client-info-section { padding: 10px !important; gap: 8px !important; }
+            /* ===== CLIENT SUMMARY BAR (mobile) ===== */
+            .client-summary-bar { display: flex !important; }
+            .client-info-section:not(.expanded) { display: none !important; }
+            .client-info-section.expanded { display: flex !important; }
+
+            .client-field label { font-size: 0.75rem !important; }
+            .underline-input { padding: 6px 3px 4px 3px !important; font-size: 0.85rem !important; }
+
+            /* Hamburger visible on mobile */
+            .hamburger-btn { display: flex !important; }
+            .update-controls { display: none !important; }
         }
 
         @media print {
@@ -450,6 +556,42 @@
                 gap: 8px !important;
             }
         }
+
+        /* ===== MOBILE CLIENT SUMMARY BAR ===== */
+        .client-summary-bar {
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 10px 14px;
+            margin-bottom: 10px;
+            background: linear-gradient(180deg, #fef9e3 0%, #fdf3d0 100%);
+            border: 1px solid rgba(212,175,55,0.35);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #7a5c1a;
+        }
+        .client-summary-bar span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+        .client-summary-toggle {
+            background: linear-gradient(180deg, #d4af37, #a67c00);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .client-summary-toggle:hover { filter: brightness(1.08); }
+        .client-info-section.collapsed { display: none !important; }
 </style>
 </head>
 <body>
@@ -524,7 +666,11 @@
                 <div class="client-selector"><select id="clientDropdown" class="client-dropdown" onchange="loadClient()"><option value="">-- Select Client --</option></select></div>
                 <div class="client-actions"><button class="btn btn-primary" onclick="addNewClient()">New Client</button><button class="btn btn-warning" onclick="saveCurrentClient()">Save</button><button class="btn btn-danger" onclick="deleteCurrentClient()">Delete</button></div>
             </div>
-            <div class="client-info-section">
+            <div class="client-summary-bar" id="clientSummaryBar">
+                <span id="clientSummaryText">No client details</span>
+                <button class="client-summary-toggle" id="clientDetailsToggle" type="button">Edit details ▾</button>
+            </div>
+            <div class="client-info-section" id="clientInfoSection">
                 <div class="client-field"><label>M/S (Client/Company)</label><input type="text" id="clientName" class="underline-input" placeholder="Client name"></div>
                 <div class="client-field"><label>Telephone</label><input type="text" id="clientPhone" class="underline-input"></div>
                 <div class="client-field"><label>Tax PIN</label><input type="text" id="clientTaxPin" class="underline-input" placeholder="Client Tax PIN"></div>
@@ -1412,6 +1558,47 @@ window.addEventListener('appinstalled', () => {
         }
     });
 })();
+
+
+// ===== Client details toggle (mobile) =====
+(function() {
+    const toggle = document.getElementById('clientDetailsToggle');
+    const section = document.getElementById('clientInfoSection');
+    if (!toggle || !section) return;
+
+    toggle.addEventListener('click', () => {
+        const isOpen = section.classList.toggle('expanded');
+        toggle.innerText = isOpen ? 'Hide details ▴' : 'Edit details ▾';
+    });
+})();
+
+// Update the summary text whenever a client is loaded
+function updateClientSummary() {
+    const el = document.getElementById('clientSummaryText');
+    if (!el) return;
+    const name = document.getElementById('clientName').value.trim();
+    const phone = document.getElementById('clientPhone').value.trim();
+    if (!name) {
+        el.innerText = 'No client details';
+    } else {
+        el.innerText = phone ? name + ' (' + phone + ')' : name;
+    }
+}
+
+// Hook into loadClient() completion to update summary
+document.addEventListener('DOMContentLoaded', () => {
+    const origLoadClient = window.loadClient;
+    if (typeof origLoadClient === 'function') {
+        window.loadClient = async function() {
+            await origLoadClient.apply(this, arguments);
+            updateClientSummary();
+            const section = document.getElementById('clientInfoSection');
+            const toggle = document.getElementById('clientDetailsToggle');
+            if (section) section.classList.remove('expanded');
+            if (toggle) toggle.innerText = 'Edit details ▾';
+        };
+    }
+});
 
 </script>
 </body>
