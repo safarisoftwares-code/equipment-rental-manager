@@ -210,7 +210,18 @@
             .comment-section, .form-footer { margin-top: 20px; }
             .signature-area { border-top: 1px solid #000; margin-top: 40px; padding-top: 10px; }
         }
-    </style>
+    
+        .header-logo {
+            height: 60px;
+            width: 60px;
+            object-fit: contain;
+            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.35));
+            flex-shrink: 0;
+        }
+        @media (max-width: 768px) {
+            .header-logo { height: 44px; width: 44px; }
+        }
+</style>
 </head>
 <body>
 <div id="loginModal" class="modal">
@@ -254,7 +265,10 @@
     </div>
     <div class="container">
         <div class="header">
-            <h1 class="company-name" id="companyNameDisplay">Renta</h1>
+            <div style="display:flex; align-items:center; justify-content:center; gap:14px;">
+                <img src="/static/equips-renta.png" alt="Renta" class="header-logo">
+                <h1 class="company-name" id="companyNameDisplay">Renta</h1>
+            </div>
             <div class="company-details">
                 <div class="detail-item"><i class="fas fa-map-marker-alt"></i><span id="addressDisplay"></span></div>
                 <div class="detail-item"><i class="fas fa-phone"></i><span id="phoneDisplay"></span></div>
@@ -992,14 +1006,59 @@ function exportToJSON() {
 function showPrivacyPolicy() {
     const modalDiv = document.createElement('div');
     modalDiv.className = 'modal';
-    modalDiv.innerHTML = `<div class="modal-content" style="max-width:600px; text-align:left;"><h2>Privacy Policy</h2><div style="max-height:60vh; overflow-y:auto;"><p><strong>Effective Date:</strong> May 2026</p><p><strong>1. Information We Collect</strong><br>We collect business and client information you provide, including names, contact details, rental records, payment information, and Tax PINs.</p><p><strong>2. How We Use Your Information</strong><br>Your data is used solely to manage rental transactions, generate reports, and comply with tax regulations. We do not sell or share your personal data.</p><p><strong>3. Data Security</strong><br>All passwords are hashed, and database connections are encrypted.</p><p><strong>4. Data Retention</strong><br>Your data is retained as long as your account is active.</p><p><strong>5. Your Rights</strong><br>Contact us at info@safarisoftwares.co.ke for any privacy-related requests.</p><p><strong>6. Contact</strong><br>Safari Softwares, info@safarisoftwares.co.ke, WhatsApp: +254112168732</p></div><button id="closePrivacyModal" style="margin-top:20px;">Close</button></div>`;
+    modalDiv.innerHTML = `<div class="modal-content" style="max-width:520px; text-align:left;">
+        <h2>Privacy Policy</h2>
+        <div style="max-height:60vh; overflow-y:auto;">
+            <p style="font-size:0.9rem; color:#64748b;"><strong>Summary</strong> — Effective 23 September 2026</p>
+            <ul style="font-size:0.9rem; padding-left:20px;">
+                <li><strong>Controller:</strong> Safari Softwares (Kenya)</li>
+                <li><strong>What we collect:</strong> Your account info, and the client/rental data you enter</li>
+                <li><strong>How we use it:</strong> Only to run the Service, secure it, and comply with tax law</li>
+                <li><strong>Who we share with:</strong> Hosting provider (Render) and CDN services only — never sold or traded</li>
+                <li><strong>No cookies</strong> for tracking, analytics, or advertising</li>
+                <li><strong>Your rights:</strong> Access, correct, delete, export your data at any time</li>
+                <li><strong>Retention:</strong> Account data while active; tax records 7 years</li>
+                <li><strong>Compliance:</strong> Kenya Data Protection Act 2019, GDPR-aware</li>
+            </ul>
+            <p style="margin-top:16px; padding:12px; background:#fdf6e3; border-left:4px solid #d4af37; border-radius:8px; font-size:0.9rem;">
+                This is a summary. The full Privacy Policy contains binding terms including international transfers, breach notification, and your legal rights.
+            </p>
+            <p style="margin-top:14px;">
+                <a href="/static/privacy.html" target="_blank" style="display:inline-block; padding:10px 20px; background:#2563eb; color:white; text-decoration:none; border-radius:40px; font-weight:600;">Read Full Privacy Policy →</a>
+            </p>
+        </div>
+        <button id="closePrivacyModal" style="margin-top:20px;">Close</button>
+    </div>`;
     document.body.appendChild(modalDiv);
     document.getElementById('closePrivacyModal').onclick = () => modalDiv.remove();
 }
 function showTermsOfUse() {
     const modalDiv = document.createElement('div');
     modalDiv.className = 'modal';
-    modalDiv.innerHTML = `<div class="modal-content" style="max-width:600px; text-align:left;"><h2>Terms of Use</h2><div style="max-height:60vh; overflow-y:auto;"><p><strong>Effective Date:</strong> May 2026</p><p><strong>1. Acceptance of Terms</strong><br>By using Renta you agree to these terms.</p><p><strong>2. License</strong><br>Non-exclusive, non-transferable for internal business use.</p><p><strong>3. User Responsibilities</strong><br>Keep your credentials confidential.</p><p><strong>4. Prohibited Uses</strong><br>No illegal or harmful activity.</p><p><strong>5. Disclaimer</strong><br>Software provided "as is".</p><p><strong>6. Limitation of Liability</strong><br>Safari Softwares is not liable for indirect damages.</p><p><strong>7. Termination</strong><br>We may suspend access for violations.</p><p><strong>8. Governing Law</strong><br>Republic of Kenya.</p><p><strong>9. Contact</strong><br>info@safarisoftwares.co.ke or +254112168732.</p></div><button id="closeTermsModal" style="margin-top:20px;">Close</button></div>`;
+    modalDiv.innerHTML = `<div class="modal-content" style="max-width:520px; text-align:left;">
+        <h2>Terms of Use</h2>
+        <div style="max-height:60vh; overflow-y:auto;">
+            <p style="font-size:0.9rem; color:#64748b;"><strong>Summary</strong> — Effective 23 September 2026</p>
+            <ul style="font-size:0.9rem; padding-left:20px;">
+                <li><strong>You must be 18+</strong> and authorized to bind your company</li>
+                <li><strong>Keep your password secure</strong> — you are responsible for your account activity</li>
+                <li><strong>You own your data</strong> — client records, rentals, invoices</li>
+                <li><strong>We own the software</strong> — Renta, Safari Softwares, source code, design</li>
+                <li><strong>Acceptable use:</strong> no illegal activity, no attempts to breach security, no scraping, no fraud</li>
+                <li><strong>Service is "as is"</strong> — currently free, no SLA guarantee</li>
+                <li><strong>Liability is capped</strong> at KES 10,000 or fees paid in last 12 months</li>
+                <li><strong>Governing law:</strong> Republic of Kenya — disputes in Nairobi courts</li>
+                <li><strong>We can suspend accounts</strong> that violate these rules</li>
+            </ul>
+            <p style="margin-top:16px; padding:12px; background:#fdf6e3; border-left:4px solid #d4af37; border-radius:8px; font-size:0.9rem;">
+                This is a summary. The full Terms of Use contain binding terms including indemnification, limitation of liability, and dispute resolution.
+            </p>
+            <p style="margin-top:14px;">
+                <a href="/static/terms.html" target="_blank" style="display:inline-block; padding:10px 20px; background:#2563eb; color:white; text-decoration:none; border-radius:40px; font-weight:600;">Read Full Terms →</a>
+            </p>
+        </div>
+        <button id="closeTermsModal" style="margin-top:20px;">Close</button>
+    </div>`;
     document.body.appendChild(modalDiv);
     document.getElementById('closeTermsModal').onclick = () => modalDiv.remove();
 }
