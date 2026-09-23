@@ -1,34 +1,34 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Equipment Rental Manager Pro  -  manage clients, rental items, tax, invoices and payments. Built by Safari Softwares.">
+    <meta name="description" content="Equipment Rental Manager - manage clients, rental items, tax, invoices and payments. By Safari Softwares.">
     <meta name="theme-color" content="#1e3c72">
     <meta name="author" content="Safari Softwares">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Renta">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <!-- Open Graph (WhatsApp / Facebook previews) -->
-    <meta property="og:title" content="Equipment Rental Manager Pro">
-    <meta property="og:description" content="Manage equipment rentals, clients, tax and invoices  -  all in one place.">
+    <meta property="og:title" content="Renta - Equipment Rental Manager">
+    <meta property="og:description" content="Manage equipment rentals, clients, tax and invoices - all in one place.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://equipment-rental.onrender.com">
+    <meta property="og:url" content="https://equips-renta.onrender.com">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Equipment Rental Manager Pro">
-    <meta name="twitter:description" content="Manage equipment rentals, clients, tax and invoices  -  all in one place.">
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/favicon-32.png">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="manifest" href="/static/manifest.json">
 
-    <!-- Favicon (served by Flask at /favicon.ico) -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico">
-    <link rel="apple-touch-icon" href="/favicon.ico">
-
-    <title>Equipment Rental Manager Pro</title>
+    <title>Renta - Equipment Rental Manager</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
         body { background: linear-gradient(135deg, #1f2b3a, #2c3e50, #1a2a3a); min-height: 100vh; padding: 20px; }
-        .header { position: sticky; top: 0; z-index: 100; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 20px 30px; text-align: center; }
+        .header { position: sticky; top: 0; z-index: 100; background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 20px 30px; text-align: center; border-radius: 20px 20px 0 0; }
         .footer { position: sticky; bottom: 0; z-index: 100; background: #0f172a; color: #e2e8f0; text-align: center; padding: 15px; margin-top: 15px; border-radius: 20px; }
         .container { max-width: 1400px; width: 100%; background: white; border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); margin: 0 auto; overflow: visible; }
         .form-container { padding: 15px 20px; }
@@ -45,55 +45,13 @@
         th { background:#1e40af; color:white; padding:12px 10px; font-weight:600; text-align: left; vertical-align: middle; }
         td { padding:8px 10px; border-bottom:1px solid #e2e8f0; background:white; vertical-align: middle; height: 48px; }
         tr:hover td { background:#fef9e3; }
-
-        #rentalTable td input,
-        #rentalTable td select {
-            width: 100%;
-            margin: 0;
-            padding: 8px 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
-            display: block;
-        }
-
-        #rentalTable td .readonly {
-            background-color: #f3f4f6;
-            border-color: #e5e7eb;
-        }
-
-        .delete-row-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        #rentalTable td input, #rentalTable td select { width: 100%; margin: 0; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; box-sizing: border-box; display: block; }
+        #rentalTable td .readonly { background-color: #f3f4f6; border-color: #e5e7eb; }
+        .delete-row-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #ef4444; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; }
         tr:hover .delete-row-btn { opacity: 1; }
-
-        input[type="number"], input[type="text"], input[type="date"] {
-            width: 100%;
-            padding: 8px 8px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
+        input[type="number"], input[type="text"], input[type="date"] { width: 100%; padding: 8px 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
         .total-row { background:#e6f0ff; font-weight:700; }
         .total-row td { padding:12px 10px; }
-
         .actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap:8px; margin:15px 0 10px; }
         .btn { padding:6px 12px; border-radius:40px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:0.2s; flex:1 0 auto; justify-content:center; font-size:0.85rem; }
         .btn-primary { background:#2563eb; color:white; }
@@ -116,9 +74,107 @@
         .dropdown-content a:hover { background:#f1f5f9; }
         .dropdown:hover .dropdown-content { display:block; }
         .current-client-display { background:#e0f2fe; padding:10px; border-radius:40px; margin-bottom:15px; text-align:center; font-weight:600; font-size:0.9rem; }
-        
+        .error-msg { color:#dc2626; text-align:center; margin-top:10px; }
+        #mainApp { display: none; }
+        .company-name { font-size: 28px; font-weight: 800; }
+        .company-details { display: flex; justify-content: space-between; flex-wrap: wrap; margin-top: 10px; gap: 8px; }
+        .detail-item { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 40px; }
+        .company-setup { background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; }
+        .setup-header { display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+        .setup-toggle { background:#2563eb; color:white; padding:6px 16px; border-radius:40px; border:none; cursor:pointer; font-weight:600; }
+        .setup-form { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:12px; background:white; padding:15px; border-radius:20px; margin-top:8px; display:none; }
+        .setup-field label { font-weight:600; display:block; margin-bottom:4px; }
+        .setup-input { width:100%; padding:8px 12px; border:2px solid #cbd5e1; border-radius:12px; }
+        .client-selector { flex:2; min-width:240px; }
+        .client-dropdown { width:100%; padding:10px; border:2px solid #2563eb; border-radius:12px; background:white; }
+        .tooltip-icon { border-bottom: 1px dashed #2563eb; cursor: help; }
+        .password-wrapper { position: relative; width: 100%; }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #2563eb; background: transparent; }
 
-@media (max-width: 768px) {
+        /* ===== LOGIN MODAL - SHINY GLASS WHITE BACKDROP + GOLD CARD ===== */
+        .modal {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background:
+                radial-gradient(circle at 30% 20%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.92) 25%, rgba(240,248,255,0.88) 60%, rgba(230,242,255,0.92) 100%),
+                linear-gradient(135deg, #ffffff 0%, #f8fcff 50%, #ffffff 100%);
+            backdrop-filter: blur(20px) saturate(180%) brightness(1.08);
+            -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.08);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 55%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 55%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .modal::after {
+            content: "";
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 40%;
+            background: linear-gradient(0deg, rgba(230,242,255,0.8) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .modal-content {
+            position: relative;
+            background: linear-gradient(180deg, #fffef9 0%, #fdf6e3 40%, #f7e9c4 100%);
+            padding: 36px 32px;
+            border-radius: 22px;
+            width: 90%;
+            max-width: 440px;
+            max-height: 82vh;
+            overflow-y: auto;
+            border: none;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,0.9) inset,
+                0 -1px 0 rgba(180,140,60,0.25) inset,
+                0 24px 50px rgba(30,58,138,0.30),
+                0 6px 18px rgba(180,140,60,0.20);
+            text-align: center;
+            z-index: 1;
+        }
+        .modal-content::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+            z-index: 0;
+            border-radius: 22px 22px 0 0;
+        }
+        .modal-content > * { position: relative; z-index: 1; }
+        .modal-content h2 { color: #7a5c1a; margin-bottom: 18px; font-size: 1.5rem; font-weight: 700; }
+        .modal-content input { width: 100%; padding: 12px; margin: 8px 0; border: 2px solid #d4af37; border-radius: 10px; font-size: 14px; background: #ffffff; color: #1e293b; text-align: left; }
+        .modal-content input:focus { outline: none; border-color: #a67c00; box-shadow: 0 0 0 3px rgba(212,175,55,0.25); }
+        .modal-content button { width: 100%; padding: 12px; background: linear-gradient(180deg, #d4af37, #a67c00); color: #ffffff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 15px; margin-top: 6px; }
+        .modal-content button:hover { filter: brightness(1.08); }
+        .modal-content .switch-mode { text-align: center; margin-top: 14px; color: #a67c00; cursor: pointer; font-size: 14px; }
+        .modal-content .error-msg { color: #dc2626; text-align: center; margin: 8px 0; font-size: 13px; }
+        .login-logo { display: block; margin: 0 auto 14px auto; width: 110px; height: 110px; object-fit: contain; filter: drop-shadow(0 6px 14px rgba(30,64,175,0.25)); }
+
+        /* ===== ADMIN DASHBOARD MODAL (keeps white theme) ===== */
+        #adminModal .modal-content {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            box-shadow: 0 24px 50px rgba(0,0,0,0.3) !important;
+            text-align: left;
+            max-width: 700px !important;
+        }
+        #adminModal .modal-content::before { display: none !important; }
+        #adminModal .modal-content h2 { color: #1e3c72 !important; }
+        #adminModal .modal-content button { background: #2563eb !important; }
+
+        @media (max-width: 768px) {
             .form-container { padding: 10px; }
             .update-controls { flex-wrap: wrap; justify-content: flex-end; gap: 6px; top: 10px; right: 10px; }
             .top-btn, .dropdown-btn { font-size: 0.7rem; padding: 4px 10px; }
@@ -131,266 +187,37 @@
             table { min-width: 750px; }
             th, td { font-size: 0.75rem; padding: 6px 6px; }
             #rentalTable td input { padding: 6px 4px; font-size: 12px; }
-            .company-details {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                gap: 5px;
-                margin-top: 10px;
-            }
+            .company-details { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; margin-top: 10px; }
             .detail-item:nth-child(1) { order: 1; }
             .detail-item:nth-child(3) { order: 2; }
             .detail-item:nth-child(2) { order: 3; }
-            .detail-item {
-                background: rgba(255,255,255,0.15);
-                border-radius: 40px;
-                padding: 4px 12px;
-                font-size: 0.85rem;
-                width: auto;
-            }
+            .detail-item { background: rgba(255,255,255,0.15); border-radius: 40px; padding: 4px 12px; font-size: 0.85rem; width: auto; }
         }
 
-        /* ========== FIXED PRINT STYLES - client info wraps properly ========== */
         @media print {
             .no-print { display: none !important; }
             body { background: white; margin: 0; padding: 0; }
             .header, .footer { position: static; }
-
-            .company-details {
-                display: block !important;
-                text-align: center;
-            }
-            .detail-item {
-                display: inline-block !important;
-                margin: 0 8px;
-                white-space: normal;
-                word-break: keep-all;
-            }
-
-            .client-info-section {
-                display: block !important;
-                margin: 15px 0;
-                padding: 0;
-                border: none;
-            }
-            .client-field {
-                width: 100% !important;
-                margin-bottom: 10px;
-                page-break-inside: avoid;
-            }
-            .client-field label {
-                font-weight: bold;
-                display: inline-block;
-                width: 130px;
-                vertical-align: top;
-            }
-            .client-field .underline-input {
-                display: inline-block;
-                width: calc(100% - 140px);
-                border: none;
-                border-bottom: 1px solid #000;
-                padding: 0 0 2px 0;
-                background: transparent;
-            }
-
-            table {
-                width: 100%;
-                border-collapse: collapse;
-            }
-            th, td {
-                word-break: break-word;
-                white-space: normal;
-                border: 1px solid #ccc;
-                padding: 6px;
-            }
-            .total-row td {
-                font-weight: bold;
-            }
-
-            .comment-section, .form-footer {
-                margin-top: 20px;
-            }
-            .signature-area {
-                border-top: 1px solid #000;
-                margin-top: 40px;
-                padding-top: 10px;
-            }
+            .company-details { display: block !important; text-align: center; }
+            .detail-item { display: inline-block !important; margin: 0 8px; white-space: normal; word-break: keep-all; }
+            .client-info-section { display: block !important; margin: 15px 0; padding: 0; border: none; }
+            .client-field { width: 100% !important; margin-bottom: 10px; page-break-inside: avoid; }
+            .client-field label { font-weight: bold; display: inline-block; width: 130px; vertical-align: top; }
+            .client-field .underline-input { display: inline-block; width: calc(100% - 140px); border: none; border-bottom: 1px solid #000; padding: 0 0 2px 0; background: transparent; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { word-break: break-word; white-space: normal; border: 1px solid #ccc; padding: 6px; }
+            .total-row td { font-weight: bold; }
+            .comment-section, .form-footer { margin-top: 20px; }
+            .signature-area { border-top: 1px solid #000; margin-top: 40px; padding-top: 10px; }
         }
-    
-/* ===== LOGIN MODAL - SOLID WHITE, LIGHT BACKDROP ===== */
-
-
-
-
-
-
-
-
-
-
-
-
-/* ===== LOGIN MODAL - SOLID SHINY WHITE ===== */
-
-
-/* Shiny white sheen - pure white, no transparency issue */
-
-
-
-
-
-
-
-
-
-
-/* ===== SHINY WHITE LOGIN MODAL ===== */
-.modal {
-    display: flex;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background:
-        radial-gradient(circle at 30% 20%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.9) 25%, rgba(240,248,255,0.85) 60%, rgba(230,242,255,0.9) 100%),
-        linear-gradient(135deg, #ffffff 0%, #f8fcff 50%, #ffffff 100%);
-    backdrop-filter: blur(20px) saturate(180%) brightness(1.08);
-    -webkit-backdrop-filter: blur(20px) saturate(180%) brightness(1.08);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
-.modal::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 55%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.4) 55%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
-    z-index: 0;
-}
-.modal::after {
-    content: "";
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 40%;
-    background: linear-gradient(0deg, rgba(230,242,255,0.8) 0%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.modal-content h2 {
-    color: #1e3c72;
-    margin-bottom: 22px;
-    font-size: 1.5rem;
-    font-weight: 700;
-}
-.modal-content input {
-    width: 100%;
-    padding: 12px 14px;
-    margin: 8px 0;
-    border: 2px solid #e2e8f0;
-    border-radius: 10px;
-    font-size: 14px;
-    background: #ffffff;
-    color: #1e293b;
-    text-align: left;
-    box-sizing: border-box;
-}
-.modal-content input:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
-}
-.modal-content button {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(180deg, #3b82f6, #2563eb);
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 15px;
-    margin-top: 6px;
-    box-shadow: 0 2px 0 rgba(30,64,175,0.5), 0 4px 12px rgba(37,99,235,0.35);
-}
-.modal-content button:hover { filter: brightness(1.08); }
-.modal-content .switch-mode {
-    text-align: center;
-    margin-top: 14px;
-    color: #2563eb;
-    cursor: pointer;
-    font-size: 14px;
-}
-.modal-content .password-wrapper { position: relative; width: 100%; }
-.modal-content .toggle-password {
-    position: absolute;
-    right: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    color: #2563eb;
-    background: transparent;
-}
-
-        .login-logo {
-            display: block;
-            margin: 0 auto 16px auto;
-            width: 110px;
-            height: 110px;
-            object-fit: contain;
-            filter: drop-shadow(0 6px 14px rgba(30,64,175,0.25));
-        }
-
-
-/* Gold shimmer line at top */
-
-/* Soft white sheen overlay */
-
-.modal-content > * {
-    position: relative;
-    z-index: 1;
-}
-
-.modal-content {
-    position: relative;
-    background: linear-gradient(180deg, #fffef9 0%, #fdf6e3 40%, #f7e9c4 100%);
-    padding: 36px 32px;
-    border-radius: 22px;
-    width: 90%;
-    max-width: 440px;
-    max-height: 82vh;
-    overflow-y: auto;
-    border: none;
-    box-shadow:
-        0 1px 0 rgba(255,255,255,0.9) inset,
-        0 -1px 0 rgba(180,140,60,0.25) inset,
-        0 24px 50px rgba(30,58,138,0.30),
-        0 6px 18px rgba(180,140,60,0.20);
-    text-align: center;
-    overflow: hidden;
-}
-.modal-content::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 50%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 100%);
-    pointer-events: none;
-    z-index: 0;
-}
-.modal-content > * { position: relative; z-index: 1; }
-.modal-content h2 { color: #7a5c1a; }
-.modal-content .switch-mode { color: #a67c00; }
-</style>
+    </style>
 </head>
 <body>
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <img src="/static/equips-renta.png" alt="Renta" class="login-logo">
         <h2>Equipment Rental Manager</h2>
-        <div id="authError"></div>
+        <div id="authError" class="error-msg"></div>
         <input type="email" id="loginEmail" placeholder="Email">
         <div class="password-wrapper">
             <input type="password" id="loginPassword" placeholder="Password">
@@ -400,13 +227,15 @@
         <div class="switch-mode" id="showRegister">Create an account</div>
     </div>
 </div>
+
 <div id="adminModal" class="modal" style="display:none;">
-    <div class="modal-content" style="max-width:700px;">
+    <div class="modal-content">
         <h2>Admin Dashboard</h2>
         <div id="userListContainer" style="max-height:400px; overflow-y:auto;"></div>
         <button id="closeAdminModal" class="btn btn-primary" style="margin-top:20px;">Close</button>
     </div>
 </div>
+
 <div id="mainApp">
     <div class="save-indicator" id="saveIndicator">Saved!</div>
     <div class="update-controls no-print">
@@ -425,7 +254,7 @@
     </div>
     <div class="container">
         <div class="header">
-            <h1 class="company-name" id="companyNameDisplay">Equipment Rental Manager Pro</h1>
+            <h1 class="company-name" id="companyNameDisplay">Renta</h1>
             <div class="company-details">
                 <div class="detail-item"><i class="fas fa-map-marker-alt"></i><span id="addressDisplay"></span></div>
                 <div class="detail-item"><i class="fas fa-phone"></i><span id="phoneDisplay"></span></div>
@@ -434,7 +263,7 @@
             </div>
         </div>
         <div class="company-setup no-print">
-            <div class="setup-header"><h3>Company & Tax Setup</h3><button class="setup-toggle" onclick="toggleSetupForm()">Edit</button></div>
+            <div class="setup-header"><h3>Company &amp; Tax Setup</h3><button class="setup-toggle" onclick="toggleSetupForm()">Edit</button></div>
             <div class="setup-form" id="setupForm">
                 <div class="setup-field"><label>Company Name</label><input type="text" id="companyName" class="setup-input"></div>
                 <div class="setup-field"><label>Telephone</label><input type="text" id="companyPhone" class="setup-input"></div>
@@ -520,25 +349,29 @@
     </div>
     <div class="footer no-print">
         <p>&copy; 2026 Safari Softwares. All rights reserved.</p>
-        <div>safarisoftwares@gmail.com | +254112168732</div>
+        <div>info@safarisoftwares.co.ke | +254112168732</div>
         <div><a href="#" onclick="showPrivacyPolicy()">Privacy Policy</a> | <a href="#" onclick="showTermsOfUse()">Terms of Use</a></div>
     </div>
 </div>
 
 <script>
-// ==================== Helper functions ====================
+const API_BASE = window.location.origin;
+let token = localStorage.getItem('token');
+let currentClientId = null;
+let autoSaveTimeout = null;
+let currentUserRole = null;
+let currentUserEmail = '';
+
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
 }
-
 function showSaveIndicator(msg) {
     const ind = document.getElementById('saveIndicator');
     ind.innerText = msg;
     ind.style.display = 'block';
     setTimeout(() => ind.style.display = 'none', 2000);
 }
-
 function downloadBlob(content, filename, mime) {
     const blob = new Blob([content], { type: mime });
     const a = document.createElement('a');
@@ -547,7 +380,6 @@ function downloadBlob(content, filename, mime) {
     a.click();
     URL.revokeObjectURL(a.href);
 }
-
 function downloadJSON(obj, filename) {
     const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
@@ -556,81 +388,6 @@ function downloadJSON(obj, filename) {
     a.click();
     URL.revokeObjectURL(a.href);
 }
-
-// ==================== Privacy Policy & Terms of Use ====================
-function showPrivacyPolicy() {
-    const modalDiv = document.createElement('div');
-    modalDiv.className = 'modal';
-    modalDiv.innerHTML = `
-        <div class="modal-content" style="max-width:600px;">
-            <h2>Privacy Policy</h2>
-            <div style="text-align:left; max-height:60vh; overflow-y:auto; padding-right:10px;">
-                <p><strong>Effective Date:</strong> May 2026</p>
-                <p><strong>1. Information We Collect</strong><br>
-                We collect business and client information you provide, including names, contact details, rental records, payment information, and Tax PINs. This data is necessary for the operation of the equipment rental management system.</p>
-                <p><strong>2. How We Use Your Information</strong><br>
-                Your data is used solely to manage rental transactions, generate reports, and comply with tax regulations. We do not sell or share your personal data with third parties for marketing purposes.</p>
-                <p><strong>3. Data Security</strong><br>
-                We implement industry-standard security measures to protect your data against unauthorized access, alteration, or destruction. All passwords are hashed, and database connections are encrypted.</p>
-                <p><strong>4. Data Retention</strong><br>
-                Your data is retained as long as your account is active or as needed to provide you services. You may request deletion of your data by contacting support.</p>
-                <p><strong>5. Your Rights</strong><br>
-                You have the right to access, correct, or delete your personal information. Contact us at safarisoftwares@gmail.com for any privacy-related requests.</p>
-                <p><strong>6. Changes to This Policy</strong><br>
-                We may update this privacy policy from time to time. Continued use of the system constitutes acceptance of any changes.</p>
-                <p><strong>7. Contact Us</strong><br>
-                Safari Softwares, safarisoftwares@gmail.com, WhatsApp: +254112168732</p>
-            </div>
-            <button id="closePrivacyModal" class="btn btn-primary" style="margin-top:20px;">Close</button>
-        </div>
-    `;
-    document.body.appendChild(modalDiv);
-    document.getElementById('closePrivacyModal').onclick = () => modalDiv.remove();
-}
-
-function showTermsOfUse() {
-    const modalDiv = document.createElement('div');
-    modalDiv.className = 'modal';
-    modalDiv.innerHTML = `
-        <div class="modal-content" style="max-width:600px;">
-            <h2>Terms of Use</h2>
-            <div style="text-align:left; max-height:60vh; overflow-y:auto; padding-right:10px;">
-                <p><strong>Effective Date:</strong> May 2026</p>
-                <p><strong>1. Acceptance of Terms</strong><br>
-                By using the Equipment Rental Manager Pro, you agree to be bound by these Terms of Use. If you do not agree, do not use the system.</p>
-                <p><strong>2. License</strong><br>
-                We grant you a non-exclusive, non-transferable license to use the software for your internal business purposes. You may not resell, redistribute, or reverse-engineer the software.</p>
-                <p><strong>3. User Responsibilities</strong><br>
-                You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to provide accurate and complete information.</p>
-                <p><strong>4. Prohibited Uses</strong><br>
-                You may not use the system for any illegal purpose, to harass or harm others, or to interfere with the operation of the service.</p>
-                <p><strong>5. Disclaimer of Warranties</strong><br>
-                The software is provided "as is" without warranties of any kind. We do not guarantee that the system will be uninterrupted, error-free, or free from harmful components.</p>
-                <p><strong>6. Limitation of Liability</strong><br>
-                To the maximum extent permitted by law, Safari Softwares shall not be liable for any indirect, incidental, or consequential damages arising from the use of the software.</p>
-                <p><strong>7. Termination</strong><br>
-                We may suspend or terminate your access at any time if you violate these terms. You may delete your account at any time via the admin dashboard.</p>
-                <p><strong>8. Governing Law</strong><br>
-                These terms shall be governed by the laws of the Republic of Kenya.</p>
-                <p><strong>9. Changes to Terms</strong><br>
-                We may update these terms from time to time. Continued use of the system constitutes acceptance of the revised terms.</p>
-                <p><strong>10. Contact</strong><br>
-                For questions, contact safarisoftwares@gmail.com or +254112168732.</p>
-            </div>
-            <button id="closeTermsModal" class="btn btn-primary" style="margin-top:20px;">Close</button>
-        </div>
-    `;
-    document.body.appendChild(modalDiv);
-    document.getElementById('closeTermsModal').onclick = () => modalDiv.remove();
-}
-
-// ==================== API and Authentication ====================
-const API_BASE = window.location.origin;
-let token = localStorage.getItem('token');
-let currentClientId = null;
-let autoSaveTimeout = null;
-let currentUserRole = null;
-let currentUserEmail = '';
 
 async function apiCall(endpoint, options = {}) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
@@ -660,6 +417,7 @@ document.getElementById('loginBtn').onclick = async () => {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     const errorDiv = document.getElementById('authError');
+    errorDiv.innerText = '';
     if (!email || !password) { errorDiv.innerText = 'Enter email and password'; return; }
     try {
         const res = await fetch(`${API_BASE}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
@@ -681,15 +439,19 @@ document.getElementById('showRegister').onclick = async () => {
     try {
         const res = await fetch(`${API_BASE}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name }) });
         const data = await res.json();
-        if (data.token) { token = data.token; currentUserRole = data.user.role; localStorage.setItem('token', token); document.getElementById('loginModal').style.display = 'none'; document.getElementById('mainApp').style.display = 'block'; loadCompanyFromUser(); loadClientDropdown(); clearForm(); if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex'; }
-        else alert('Registration failed');
+        if (data.token) {
+            token = data.token; currentUserRole = data.user.role; localStorage.setItem('token', token);
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            loadCompanyFromUser(); loadClientDropdown(); clearForm();
+            if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex';
+        } else alert('Registration failed');
     } catch (err) { alert(err.message); }
 };
 
 document.getElementById('logoutBtn').onclick = () => { localStorage.removeItem('token'); token = null; document.getElementById('loginModal').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none'; };
 document.getElementById('changePasswordBtn').onclick = () => { const old = prompt('Current password:'); if (!old) return; const newp = prompt('New password:'); if (!newp) return; apiCall('/api/auth/change-password', { method: 'POST', body: JSON.stringify({ old_password: old, new_password: newp }) }).then(() => alert('Password changed')).catch(err => alert(err.message)); };
 
-// ==================== Admin Dashboard ====================
 document.getElementById('adminDashboardBtn').onclick = async () => {
     try {
         const data = await apiCall('/api/admin/users');
@@ -704,15 +466,14 @@ document.getElementById('adminDashboardBtn').onclick = async () => {
                 <td>
                     <button class="btn btn-small" onclick="adminResetPassword('${user.email}', ${user.id})">Reset Pass</button>
                     ${user.is_active ? `<button class="btn btn-small btn-danger" onclick="adminSuspendUser(${user.id}, '${user.email}')">Suspend</button>` : `<button class="btn btn-small btn-success" onclick="adminActivateUser(${user.id}, '${user.email}')">Activate</button>`}
-                <\/td>
-            <\/tr>`;
+                </td>
+            </tr>`;
         }
-        html += '<\/table>';
+        html += '</table>';
         container.innerHTML = html;
         document.getElementById('adminModal').style.display = 'flex';
     } catch (err) { alert(err.message); }
 };
-
 window.adminResetPassword = async (email, userId) => {
     const newPass = prompt(`Reset password for ${email}\nEnter new password:`);
     if (!newPass) return;
@@ -720,7 +481,7 @@ window.adminResetPassword = async (email, userId) => {
     alert(`Password for ${email} has been reset.`);
 };
 window.adminSuspendUser = async (userId, email) => {
-    if (confirm(`Suspend user ${email}? They will not be able to log in.`)) {
+    if (confirm(`Suspend user ${email}?`)) {
         await apiCall(`/api/admin/users/${userId}/suspend`, { method: 'POST' });
         alert(`User ${email} suspended.`);
         document.getElementById('adminDashboardBtn').click();
@@ -733,13 +494,12 @@ window.adminActivateUser = async (userId, email) => {
 };
 document.getElementById('closeAdminModal').onclick = () => { document.getElementById('adminModal').style.display = 'none'; };
 
-// ==================== Company Profile ====================
 async function loadCompanyFromUser() {
     try {
         const data = await apiCall('/api/auth/verify');
         const u = data.user;
         currentUserEmail = u.email;
-        document.getElementById('companyNameDisplay').innerText = u.company_name || 'Equipment Rental Manager Pro';
+        document.getElementById('companyNameDisplay').innerText = u.company_name || 'Renta';
         document.getElementById('phoneDisplay').innerText = u.company_phone || 'Tel: ...';
         document.getElementById('addressDisplay').innerText = u.company_address || 'P. O. Box ...';
         document.getElementById('emailDisplay').innerText = u.company_email || '...';
@@ -753,7 +513,6 @@ async function loadCompanyFromUser() {
         document.getElementById('taxPinDisplay').innerText = u.company_tax_pin ? `Tax PIN: ${u.company_tax_pin}` : 'Tax PIN: Not set';
     } catch (e) { console.error(e); }
 }
-
 async function saveCompanyDetails() {
     await apiCall('/api/company', {
         method: 'PUT',
@@ -771,13 +530,11 @@ async function saveCompanyDetails() {
     toggleSetupForm();
     showSaveIndicator('Company & Tax saved');
 }
-
 function toggleSetupForm() {
     const f = document.getElementById('setupForm');
     f.style.display = f.style.display === 'none' ? 'grid' : 'none';
 }
 
-// ==================== Client Management ====================
 async function loadClientDropdown() {
     const data = await apiCall('/api/clients');
     const dropdown = document.getElementById('clientDropdown');
@@ -789,7 +546,6 @@ async function loadClientDropdown() {
         dropdown.appendChild(opt);
     }
 }
-
 async function loadClient() {
     const id = document.getElementById('clientDropdown').value;
     if (!id) { currentClientId = null; clearForm(); return; }
@@ -812,56 +568,24 @@ async function loadClient() {
     calculateAll();
     document.getElementById('currentClientDisplay').innerText = `Current: ${clientInfo?.client_name || 'Unknown'}`;
 }
-
 async function addNewClient() {
     const clientName = prompt('Enter client/company name:');
     if (!clientName) return;
-    const newClient = await apiCall('/api/clients', {
-        method: 'POST',
-        body: JSON.stringify({
-            client_name: clientName,
-            client_phone: '',
-            client_tax_pin: '',
-            client_email: '',
-            client_pob: '',
-            client_comment: ''
-        })
-    });
+    const newClient = await apiCall('/api/clients', { method: 'POST', body: JSON.stringify({ client_name: clientName, client_phone: '', client_tax_pin: '', client_email: '', client_pob: '', client_comment: '' }) });
     await loadClientDropdown();
     document.getElementById('clientDropdown').value = newClient.id;
     loadClient();
 }
-
 async function saveCurrentClient(showNotification = true) {
     const name = document.getElementById('clientName').value.trim();
     if (!name) { if (showNotification) alert('Client name required'); return false; }
     if (!currentClientId) {
-        const newClient = await apiCall('/api/clients', {
-            method: 'POST',
-            body: JSON.stringify({
-                client_name: name,
-                client_phone: document.getElementById('clientPhone').value,
-                client_tax_pin: document.getElementById('clientTaxPin').value,
-                client_email: document.getElementById('clientEmail').value,
-                client_pob: document.getElementById('clientPOB').value,
-                client_comment: document.getElementById('clientComment').value
-            })
-        });
+        const newClient = await apiCall('/api/clients', { method: 'POST', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_tax_pin: document.getElementById('clientTaxPin').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) });
         currentClientId = newClient.id;
         await loadClientDropdown();
         document.getElementById('clientDropdown').value = currentClientId;
     } else {
-        await apiCall(`/api/clients/${currentClientId}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-                client_name: name,
-                client_phone: document.getElementById('clientPhone').value,
-                client_tax_pin: document.getElementById('clientTaxPin').value,
-                client_email: document.getElementById('clientEmail').value,
-                client_pob: document.getElementById('clientPOB').value,
-                client_comment: document.getElementById('clientComment').value
-            })
-        });
+        await apiCall(`/api/clients/${currentClientId}`, { method: 'PUT', body: JSON.stringify({ client_name: name, client_phone: document.getElementById('clientPhone').value, client_tax_pin: document.getElementById('clientTaxPin').value, client_email: document.getElementById('clientEmail').value, client_pob: document.getElementById('clientPOB').value, client_comment: document.getElementById('clientComment').value }) });
     }
     const items = [];
     document.querySelectorAll('#rentalTableBody tr').forEach(row => {
@@ -878,7 +602,6 @@ async function saveCurrentClient(showNotification = true) {
     await loadClientDropdown();
     return true;
 }
-
 async function deleteCurrentClient() {
     if (!currentClientId) return alert('Select a client');
     if (!confirm('Delete client and all data?')) return;
@@ -888,7 +611,6 @@ async function deleteCurrentClient() {
     await loadClientDropdown();
     showSaveIndicator('Client deleted');
 }
-
 function clearForm() {
     document.getElementById('clientName').value = '';
     document.getElementById('clientPhone').value = '';
@@ -903,10 +625,8 @@ function clearForm() {
     document.getElementById('currentClientDisplay').innerText = 'No client selected';
     document.getElementById('clientDropdown').value = '';
 }
-
 function clearCurrentForm() { if (confirm('Clear form?')) clearForm(); }
 
-// ==================== Table Functions ====================
 function addRowFromItem(item) {
     const tbody = document.getElementById('rentalTableBody');
     const row = tbody.insertRow();
@@ -928,12 +648,10 @@ function addRowFromItem(item) {
     attachRowEvents(row);
     calculateRow(row);
 }
-
 function attachRowEvents(row) {
     row.querySelectorAll('.cost-per-day, .days-issued, .amount-paid').forEach(inp => inp.addEventListener('input', () => { calculateRow(row); autoSaveCurrentClient(); }));
     row.querySelectorAll('.item-description, .date-issued').forEach(inp => inp.addEventListener('input', autoSaveCurrentClient));
 }
-
 function addNewRow() {
     const tbody = document.getElementById('rentalTableBody');
     const row = tbody.insertRow();
@@ -953,26 +671,22 @@ function addNewRow() {
     calculateRow(row);
     autoSaveCurrentClient();
 }
-
-async function calculateRow(row) {
+function calculateRow(row) {
     const cost = parseFloat(row.querySelector('.cost-per-day').value) || 0;
     const days = parseInt(row.querySelector('.days-issued').value) || 0;
     const paid = parseFloat(row.querySelector('.amount-paid').value) || 0;
     const total = cost * days;
     row.querySelector('.total-cost').value = total.toFixed(2);
-    let taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+    const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
     const taxAmount = total * taxRate / 100;
     const netAmount = total - taxAmount;
     const taxCell = row.querySelector('.tax-amount');
     taxCell.value = taxAmount.toFixed(2);
     taxCell.title = `Tax: ${taxAmount.toFixed(2)} KES | Net: ${netAmount.toFixed(2)} KES`;
-    const balance = total - paid;
-    row.querySelector('.balance').value = balance.toFixed(2);
+    row.querySelector('.balance').value = (total - paid).toFixed(2);
     updateGrandTotals();
 }
-
 function calculateAll() { document.querySelectorAll('#rentalTableBody tr').forEach(r => calculateRow(r)); }
-
 function updateGrandTotals() {
     let total = 0, tax = 0, paid = 0, bal = 0;
     document.querySelectorAll('#rentalTableBody tr').forEach(r => {
@@ -986,7 +700,6 @@ function updateGrandTotals() {
     document.getElementById('grandPaid').innerText = paid.toFixed(2);
     document.getElementById('grandBalance').innerText = bal.toFixed(2);
 }
-
 function deleteRow(btn) {
     const row = btn.closest('tr');
     if (document.querySelectorAll('#rentalTableBody tr').length > 1) row.remove();
@@ -994,29 +707,150 @@ function deleteRow(btn) {
     calculateAll();
     autoSaveCurrentClient();
 }
-
 function autoSaveCurrentClient() {
     if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
     autoSaveTimeout = setTimeout(() => { if (currentClientId) saveCurrentClient(false); }, 1500);
 }
 
-function saveAsPDF() { window.print(); }
+/* ===== Real text-based PDF (copyable, searchable) ===== */
+function saveAsPDF() {
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 12;
+        let y = margin;
 
-// ==================== Tax History ====================
+        const companyName = document.getElementById('companyNameDisplay').innerText || 'Renta';
+        const companyPhone = document.getElementById('phoneDisplay').innerText || '';
+        const companyAddress = document.getElementById('addressDisplay').innerText || '';
+        const companyTaxPin = document.getElementById('taxPinDisplay').innerText || '';
+        const companyEmail = document.getElementById('emailDisplay').innerText || '';
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(16);
+        doc.setTextColor(30, 60, 114);
+        doc.text(companyName, pageWidth / 2, y, { align: 'center' });
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(80, 80, 80);
+        const line1 = [companyAddress, companyPhone].filter(Boolean).join('  |  ');
+        const line2 = [companyTaxPin, companyEmail].filter(Boolean).join('  |  ');
+        if (line1) { doc.text(line1, pageWidth / 2, y, { align: 'center' }); y += 4; }
+        if (line2) { doc.text(line2, pageWidth / 2, y, { align: 'center' }); y += 4; }
+        y += 2;
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, y, pageWidth - margin, y);
+        y += 6;
+
+        const clientName = document.getElementById('clientName').value || '';
+        const clientPhone = document.getElementById('clientPhone').value || '';
+        const clientTaxPin = document.getElementById('clientTaxPin').value || '';
+        const clientEmail = document.getElementById('clientEmail').value || '';
+        const clientPOB = document.getElementById('clientPOB').value || '';
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Client:', margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.text(clientName, margin + 18, y);
+        y += 5;
+        if (clientPhone) { doc.text('Phone: ' + clientPhone, margin, y); y += 5; }
+        if (clientTaxPin) { doc.text('Tax PIN: ' + clientTaxPin, margin, y); y += 5; }
+        if (clientEmail) { doc.text('Email: ' + clientEmail, margin, y); y += 5; }
+        if (clientPOB) { doc.text('Address: ' + clientPOB, margin, y); y += 5; }
+        y += 3;
+
+        const rows = [];
+        document.querySelectorAll('#rentalTableBody tr').forEach(tr => {
+            rows.push([
+                tr.querySelector('.item-description').value || '',
+                tr.querySelector('.date-issued').value || '',
+                tr.querySelector('.cost-per-day').value || '0',
+                tr.querySelector('.days-issued').value || '0',
+                tr.querySelector('.total-cost').value || '0',
+                tr.querySelector('.tax-amount').value || '0',
+                tr.querySelector('.amount-paid').value || '0',
+                tr.querySelector('.balance').value || '0'
+            ]);
+        });
+
+        doc.autoTable({
+            startY: y,
+            head: [['Description', 'Date', 'Cost', 'Qty', 'Total', 'Tax', 'Paid', 'Balance']],
+            body: rows,
+            theme: 'striped',
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [245, 247, 250] },
+            columnStyles: {
+                0: { cellWidth: 45 },
+                1: { cellWidth: 20 },
+                2: { halign: 'right', cellWidth: 18 },
+                3: { halign: 'right', cellWidth: 12 },
+                4: { halign: 'right', cellWidth: 22 },
+                5: { halign: 'right', cellWidth: 18 },
+                6: { halign: 'right', cellWidth: 20 },
+                7: { halign: 'right', cellWidth: 22 }
+            },
+            margin: { left: margin, right: margin },
+            didDrawPage: function () {
+                doc.setFontSize(8);
+                doc.setTextColor(120, 120, 120);
+                doc.text('Generated by Renta - Safari Softwares', pageWidth / 2, pageHeight - 6, { align: 'center' });
+            }
+        });
+
+        y = doc.lastAutoTable.finalY + 8;
+        const grandTotal = document.getElementById('grandTotal').innerText;
+        const grandTax = document.getElementById('grandTax').innerText;
+        const grandPaid = document.getElementById('grandPaid').innerText;
+        const grandBalance = document.getElementById('grandBalance').innerText;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text(`Grand Total: ${grandTotal}   |   Tax: ${grandTax}   |   Paid: ${grandPaid}   |   Balance: ${grandBalance}`, margin, y);
+        y += 12;
+
+        const comment = document.getElementById('clientComment').value;
+        if (comment && comment.trim()) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(9);
+            doc.text('Notes:', margin, y);
+            doc.setFont('helvetica', 'normal');
+            const lines = doc.splitTextToSize(comment, pageWidth - margin * 2 - 15);
+            doc.text(lines, margin + 15, y);
+            y += lines.length * 4 + 6;
+        }
+
+        if (y > pageHeight - 40) { doc.addPage(); y = margin + 20; }
+        const sigY = Math.max(y + 15, pageHeight - 40);
+        doc.setDrawColor(0, 0, 0);
+        doc.line(margin, sigY, margin + 70, sigY);
+        doc.line(pageWidth - margin - 70, sigY, pageWidth - margin, sigY);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.text("Client's Signature", margin, sigY + 5);
+        doc.text(companyName, pageWidth - margin - 70, sigY + 5);
+
+        const fname = (clientName || 'client').replace(/[^a-z0-9]/gi, '_');
+        const date = new Date().toISOString().slice(0, 10);
+        doc.save(`renta_invoice_${fname}_${date}.pdf`);
+    } catch (err) {
+        alert('PDF generation failed: ' + err.message);
+        console.error(err);
+    }
+}
+
 async function showTaxHistory() {
     try {
         const data = await apiCall('/api/tax-history');
         let html = '<div style="max-height:500px; overflow:auto;"><table style="width:100%; border-collapse:collapse;"><tr><th>Client</th><th>Item</th><th>Total Cost</th><th>Tax Rate</th><th>Tax Amount</th><th>Net Amount</th></tr>';
         for (const item of data.history) {
             const net = item.cost_per_day * item.days_issued - item.tax_amount;
-            html += `<tr>
-                <td>${escapeHtml(item.client_name)}</td>
-                <td>${escapeHtml(item.description)}</td>
-                <td>${(item.cost_per_day * item.days_issued).toFixed(2)}</td>
-                <td>${item.tax_rate}%</td>
-                <td>${item.tax_amount.toFixed(2)}</td>
-                <td>${net.toFixed(2)}</td>
-            </tr>`;
+            html += `<tr><td>${escapeHtml(item.client_name)}</td><td>${escapeHtml(item.description)}</td><td>${(item.cost_per_day * item.days_issued).toFixed(2)}</td><td>${item.tax_rate}%</td><td>${item.tax_amount.toFixed(2)}</td><td>${net.toFixed(2)}</td></tr>`;
         }
         html += '</table></div><div style="margin-top:20px;"><button id="resetTestingDataBtn" style="background:#dc2626; color:white; padding:10px 20px; border:none; border-radius:40px;">Reset Testing Data (Delete All Clients/Items)</button></div>';
         const modalDiv = document.createElement('div');
@@ -1034,7 +868,6 @@ async function showTaxHistory() {
     } catch (err) { alert('Error: ' + err.message); }
 }
 
-// ==================== Export/Import Functions ====================
 async function exportToMaster() { const data = await apiCall('/api/export-data'); downloadJSON(data, `master_backup_${new Date().toISOString().slice(0, 10)}.json`); }
 async function backupAllData() { exportToMaster(); }
 async function importFromClients() {
@@ -1053,203 +886,128 @@ async function createClientCopy() {
     downloadJSON(copy, `client_${client.client_name}.json`);
 }
 
-// ==================== CSV/Excel Import (FIXED for MM/DD/YYYY) ====================
 function convertToYYYYMMDD(dateStr) {
     if (!dateStr) return '';
     dateStr = dateStr.toString().trim();
-
-    // Already YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-
-    // Try to parse as MM/DD/YYYY or MM-DD-YYYY
     let match = dateStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
-    if (match) {
-        // Assume MM/DD/YYYY format
-        return `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
-    }
-
+    if (match) return `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
     return dateStr;
 }
-
 async function handleFileSelect(input) {
     const file = input.files[0];
     if (!file) return;
-
     function parseCSV(text) {
         if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
         const rows = [];
         for (const line of lines) {
-            const row = [];
-            let inQuote = false;
-            let current = '';
+            const row = []; let inQuote = false; let current = '';
             for (let i = 0; i < line.length; i++) {
                 const ch = line[i];
-                if (ch === '"') {
-                    inQuote = !inQuote;
-                } else if (ch === ',' && !inQuote) {
-                    row.push(current.trim());
-                    current = '';
-                } else {
-                    current += ch;
-                }
+                if (ch === '"') inQuote = !inQuote;
+                else if (ch === ',' && !inQuote) { row.push(current.trim()); current = ''; }
+                else current += ch;
             }
             row.push(current.trim());
-            for (let j = 0; j < row.length; j++) {
-                row[j] = row[j].replace(/^"|"$/g, '');
-            }
-            if (row.length >= 5) {
-                rows.push(row.slice(0, 5));
-            }
+            for (let j = 0; j < row.length; j++) row[j] = row[j].replace(/^"|"$/g, '');
+            if (row.length >= 5) rows.push(row.slice(0, 5));
         }
         return rows;
     }
-
     const reader = new FileReader();
     reader.onload = async (e) => {
         let rows = [];
         try {
-            if (file.name.endsWith('.csv')) {
-                rows = parseCSV(e.target.result);
-            } else {
+            if (file.name.endsWith('.csv')) rows = parseCSV(e.target.result);
+            else {
                 const data = new Uint8Array(e.target.result);
                 const wb = XLSX.read(data, { type: 'array' });
                 const sheet = wb.Sheets[wb.SheetNames[0]];
                 const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
                 rows = rawRows.filter(r => r.length >= 5).map(r => r.slice(0, 5));
             }
-        } catch (err) {
-            alert('Error reading file: ' + err.message);
-            return;
-        }
-
-        if (!rows.length || rows.length < 2) {
-            alert('No data rows found.');
-            return;
-        }
-
+        } catch (err) { alert('Error reading file: ' + err.message); return; }
+        if (!rows.length || rows.length < 2) { alert('No data rows found.'); return; }
         const dataRows = rows.slice(1);
-        if (dataRows.length === 0) {
-            alert('No valid data rows.');
-            return;
-        }
-
-        if (!currentClientId) {
-            alert('Please select a client BEFORE importing items.');
-            input.value = '';
-            return;
-        }
-
+        if (dataRows.length === 0) { alert('No valid data rows.'); return; }
+        if (!currentClientId) { alert('Please select a client BEFORE importing items.'); input.value = ''; return; }
         const tbody = document.getElementById('rentalTableBody');
         tbody.innerHTML = '';
         let importedCount = 0;
-
         for (let i = 0; i < dataRows.length; i++) {
             const rowData = dataRows[i];
             if (rowData.length < 5) continue;
-
             addNewRow();
             const row = tbody.lastChild;
-
-            // Description - column 0
-            if (rowData[0]) {
-                row.querySelector('.item-description').value = rowData[0];
-            }
-
-            // Date - column 1 (convert MM/DD/YYYY to YYYY-MM-DD)
-            if (rowData[1]) {
-                const convertedDate = convertToYYYYMMDD(rowData[1]);
-                row.querySelector('.date-issued').value = convertedDate;
-                console.log(`Date conversion: ${rowData[1]} -> ${convertedDate}`);
-            }
-
-            // Cost - column 2
-            if (rowData[2]) {
-                row.querySelector('.cost-per-day').value = parseFloat(rowData[2]) || 0;
-            }
-
-            // Quantity - column 3
-            if (rowData[3]) {
-                row.querySelector('.days-issued').value = parseInt(rowData[3]) || 1;
-            }
-
-            // Amount Paid - column 4
-            if (rowData[4]) {
-                row.querySelector('.amount-paid').value = parseFloat(rowData[4]) || 0;
-            }
-
+            if (rowData[0]) row.querySelector('.item-description').value = rowData[0];
+            if (rowData[1]) row.querySelector('.date-issued').value = convertToYYYYMMDD(rowData[1]);
+            if (rowData[2]) row.querySelector('.cost-per-day').value = parseFloat(rowData[2]) || 0;
+            if (rowData[3]) row.querySelector('.days-issued').value = parseInt(rowData[3]) || 1;
+            if (rowData[4]) row.querySelector('.amount-paid').value = parseFloat(rowData[4]) || 0;
             calculateRow(row);
             importedCount++;
         }
         calculateAll();
-
         try {
             await saveCurrentClient(false);
             showSaveIndicator(`Imported ${importedCount} items and saved.`);
             await loadClient();
-        } catch (err) {
-            alert('Error saving imported items: ' + err.message);
-        }
+        } catch (err) { alert('Error saving imported items: ' + err.message); }
     };
-
-    if (file.name.endsWith('.csv')) {
-        reader.readAsText(file, 'UTF-8');
-    } else {
-        reader.readAsArrayBuffer(file);
-    }
+    if (file.name.endsWith('.csv')) reader.readAsText(file, 'UTF-8');
+    else reader.readAsArrayBuffer(file);
 }
-
 function importSampleCSV() {
     downloadBlob("Description,Date Issued,Cost,Quantity,Amount Paid\nExcavator,2024-01-15,15000,7,50000", "sample.csv", "text/csv");
 }
-
-// ==================== Export Functions ====================
 function exportToCSV() {
     let csv = "Description,Date Issued,Cost,Quantity,Amount Paid\n";
     document.querySelectorAll('#rentalTableBody tr').forEach(r => {
         csv += `"${r.querySelector('.item-description').value}",${r.querySelector('.date-issued').value},${r.querySelector('.cost-per-day').value},${r.querySelector('.days-issued').value},${r.querySelector('.amount-paid').value}\n`;
     });
     const clientName = document.getElementById('clientName').value.trim().replace(/[^a-z0-9]/gi, '_') || 'all_items';
-    const filename = `rental_items_${clientName}_${new Date().toISOString().slice(0, 10)}.csv`;
-    downloadBlob(csv, filename, "text/csv");
+    downloadBlob(csv, `renta_items_${clientName}_${new Date().toISOString().slice(0, 10)}.csv`, "text/csv");
 }
-
 function exportToExcel() {
     const data = [["Description", "Date Issued", "Cost", "Quantity", "Amount Paid"]];
     document.querySelectorAll('#rentalTableBody tr').forEach(r => {
-        data.push([
-            r.querySelector('.item-description').value,
-            r.querySelector('.date-issued').value,
-            r.querySelector('.cost-per-day').value,
-            r.querySelector('.days-issued').value,
-            r.querySelector('.amount-paid').value
-        ]);
+        data.push([r.querySelector('.item-description').value, r.querySelector('.date-issued').value, r.querySelector('.cost-per-day').value, r.querySelector('.days-issued').value, r.querySelector('.amount-paid').value]);
     });
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Rental Items");
     const clientName = document.getElementById('clientName').value.trim().replace(/[^a-z0-9]/gi, '_') || 'all_items';
-    const filename = `rental_items_${clientName}_${new Date().toISOString().slice(0, 10)}.xlsx`;
-    XLSX.writeFile(wb, filename);
+    XLSX.writeFile(wb, `renta_items_${clientName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
-
 function exportToJSON() {
     const items = [];
     document.querySelectorAll('#rentalTableBody tr').forEach(r => {
-        items.push({
-            description: r.querySelector('.item-description').value,
-            date_issued: r.querySelector('.date-issued').value,
-            cost: r.querySelector('.cost-per-day').value,
-            quantity: r.querySelector('.days-issued').value,
-            amount_paid: r.querySelector('.amount-paid').value
-        });
+        items.push({ description: r.querySelector('.item-description').value, date_issued: r.querySelector('.date-issued').value, cost: r.querySelector('.cost-per-day').value, quantity: r.querySelector('.days-issued').value, amount_paid: r.querySelector('.amount-paid').value });
     });
     const clientName = document.getElementById('clientName').value.trim().replace(/[^a-z0-9]/gi, '_') || 'all_items';
-    const filename = `rental_items_${clientName}_${new Date().toISOString().slice(0, 10)}.json`;
-    downloadJSON(items, filename);
+    downloadJSON(items, `renta_items_${clientName}_${new Date().toISOString().slice(0, 10)}.json`);
 }
 
-// ==================== Initial Load ====================
+function showPrivacyPolicy() {
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal';
+    modalDiv.innerHTML = `<div class="modal-content" style="max-width:600px; text-align:left;"><h2>Privacy Policy</h2><div style="max-height:60vh; overflow-y:auto;"><p><strong>Effective Date:</strong> May 2026</p><p><strong>1. Information We Collect</strong><br>We collect business and client information you provide, including names, contact details, rental records, payment information, and Tax PINs.</p><p><strong>2. How We Use Your Information</strong><br>Your data is used solely to manage rental transactions, generate reports, and comply with tax regulations. We do not sell or share your personal data.</p><p><strong>3. Data Security</strong><br>All passwords are hashed, and database connections are encrypted.</p><p><strong>4. Data Retention</strong><br>Your data is retained as long as your account is active.</p><p><strong>5. Your Rights</strong><br>Contact us at info@safarisoftwares.co.ke for any privacy-related requests.</p><p><strong>6. Contact</strong><br>Safari Softwares, info@safarisoftwares.co.ke, WhatsApp: +254112168732</p></div><button id="closePrivacyModal" style="margin-top:20px;">Close</button></div>`;
+    document.body.appendChild(modalDiv);
+    document.getElementById('closePrivacyModal').onclick = () => modalDiv.remove();
+}
+function showTermsOfUse() {
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal';
+    modalDiv.innerHTML = `<div class="modal-content" style="max-width:600px; text-align:left;"><h2>Terms of Use</h2><div style="max-height:60vh; overflow-y:auto;"><p><strong>Effective Date:</strong> May 2026</p><p><strong>1. Acceptance of Terms</strong><br>By using Renta you agree to these terms.</p><p><strong>2. License</strong><br>Non-exclusive, non-transferable for internal business use.</p><p><strong>3. User Responsibilities</strong><br>Keep your credentials confidential.</p><p><strong>4. Prohibited Uses</strong><br>No illegal or harmful activity.</p><p><strong>5. Disclaimer</strong><br>Software provided "as is".</p><p><strong>6. Limitation of Liability</strong><br>Safari Softwares is not liable for indirect damages.</p><p><strong>7. Termination</strong><br>We may suspend access for violations.</p><p><strong>8. Governing Law</strong><br>Republic of Kenya.</p><p><strong>9. Contact</strong><br>info@safarisoftwares.co.ke or +254112168732.</p></div><button id="closeTermsModal" style="margin-top:20px;">Close</button></div>`;
+    document.body.appendChild(modalDiv);
+    document.getElementById('closeTermsModal').onclick = () => modalDiv.remove();
+}
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js').catch(err => console.log('SW registration failed:', err));
+}
+
 if (token) {
     fetch(`${API_BASE}/api/auth/verify`, { headers: { 'Authorization': `Bearer ${token}` } })
         .then(res => {
@@ -1276,4 +1034,3 @@ if (token) {
 </script>
 </body>
 </html>
-
