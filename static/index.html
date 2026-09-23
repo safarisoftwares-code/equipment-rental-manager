@@ -252,6 +252,7 @@
     <div class="update-controls no-print">
         <button class="top-btn" id="adminDashboardBtn" style="display:none;">Admin</button>
         <button class="top-btn" id="changePasswordBtn">Change Pwd</button>
+        <button class="top-btn" id="installBtn" style="display:none; background:#10b981; color:white;">📲 Install App</button>
         <button class="top-btn" id="logoutBtn">Logout</button>
         <div class="dropdown">
             <button class="dropdown-btn">Update</button>
@@ -1090,6 +1091,37 @@ if (token) {
     document.getElementById('loginModal').style.display = 'flex';
     document.getElementById('mainApp').style.display = 'none';
 }
+
+// ===== PWA install prompt =====
+let deferredPrompt = null;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (installBtn) installBtn.style.display = 'inline-flex';
+});
+
+if (installBtn) {
+    installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+            alert('To install Renta as an app:\n\nOn Android Chrome: tap the ⋮ menu → Install app\nOn iPhone Safari: tap Share → Add to Home Screen\nOn Desktop Chrome/Edge: look for the install icon in the address bar');
+            return;
+        }
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            installBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+    });
+}
+
+window.addEventListener('appinstalled', () => {
+    if (installBtn) installBtn.style.display = 'none';
+    console.log('Renta installed as app');
+});
+
 </script>
 </body>
 </html>
