@@ -1,8 +1,32 @@
-.vscode/ 
-data/ 
-*.pem 
-__pycache__/ 
-*.pyc 
-.env 
-data/ 
-*.db 
+﻿# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+.venv/
+
+# Environment
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Certificates
+*.pem
+*.key
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

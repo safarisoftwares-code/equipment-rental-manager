@@ -1,8 +1,27 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="Equipment Rental Manager Pro  -  manage clients, rental items, tax, invoices and payments. Built by Safari Softwares.">
+    <meta name="theme-color" content="#1e3c72">
+    <meta name="author" content="Safari Softwares">
+
+    <!-- Open Graph (WhatsApp / Facebook previews) -->
+    <meta property="og:title" content="Equipment Rental Manager Pro">
+    <meta property="og:description" content="Manage equipment rentals, clients, tax and invoices  -  all in one place.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://equipment-rental.onrender.com">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Equipment Rental Manager Pro">
+    <meta name="twitter:description" content="Manage equipment rentals, clients, tax and invoices  -  all in one place.">
+
+    <!-- Favicon (served by Flask at /favicon.ico) -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.ico">
+
     <title>Equipment Rental Manager Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -26,7 +45,7 @@
         th { background:#1e40af; color:white; padding:12px 10px; font-weight:600; text-align: left; vertical-align: middle; }
         td { padding:8px 10px; border-bottom:1px solid #e2e8f0; background:white; vertical-align: middle; height: 48px; }
         tr:hover td { background:#fef9e3; }
-        
+
         #rentalTable td input,
         #rentalTable td select {
             width: 100%;
@@ -38,12 +57,12 @@
             box-sizing: border-box;
             display: block;
         }
-        
+
         #rentalTable td .readonly {
             background-color: #f3f4f6;
             border-color: #e5e7eb;
         }
-        
+
         .delete-row-btn {
             position: absolute;
             right: 8px;
@@ -63,7 +82,7 @@
             justify-content: center;
         }
         tr:hover .delete-row-btn { opacity: 1; }
-        
+
         input[type="number"], input[type="text"], input[type="date"] {
             width: 100%;
             padding: 8px 8px;
@@ -71,10 +90,10 @@
             border-radius: 6px;
             font-size: 14px;
         }
-        
+
         .total-row { background:#e6f0ff; font-weight:700; }
         .total-row td { padding:12px 10px; }
-        
+
         .actions { display: flex; justify-content: space-between; flex-wrap: wrap; gap:8px; margin:15px 0 10px; }
         .btn { padding:6px 12px; border-radius:40px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:0.2s; flex:1 0 auto; justify-content:center; font-size:0.85rem; }
         .btn-primary { background:#2563eb; color:white; }
@@ -119,7 +138,7 @@
         .tooltip-icon { border-bottom: 1px dashed #2563eb; cursor: help; }
         .password-wrapper { position: relative; width: 100%; }
         .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #2563eb; background: white; padding: 4px; border-radius: 50%; }
-        
+
         @media (max-width: 768px) {
             .form-container { padding: 10px; }
             .update-controls { flex-wrap: wrap; justify-content: flex-end; gap: 6px; top: 10px; right: 10px; }
@@ -152,13 +171,13 @@
                 width: auto;
             }
         }
-        
-        /* ========== FIXED PRINT STYLES – client info wraps properly ========== */
+
+        /* ========== FIXED PRINT STYLES - client info wraps properly ========== */
         @media print {
             .no-print { display: none !important; }
             body { background: white; margin: 0; padding: 0; }
             .header, .footer { position: static; }
-            
+
             .company-details {
                 display: block !important;
                 text-align: center;
@@ -169,7 +188,7 @@
                 white-space: normal;
                 word-break: keep-all;
             }
-            
+
             .client-info-section {
                 display: block !important;
                 margin: 15px 0;
@@ -195,7 +214,7 @@
                 padding: 0 0 2px 0;
                 background: transparent;
             }
-            
+
             table {
                 width: 100%;
                 border-collapse: collapse;
@@ -209,7 +228,7 @@
             .total-row td {
                 font-weight: bold;
             }
-            
+
             .comment-section, .form-footer {
                 margin-top: 20px;
             }
@@ -585,7 +604,6 @@ async function loadCompanyFromUser() {
         document.getElementById('companyAddress').value = u.company_address || '';
         document.getElementById('companyEmail').value = u.company_email || '';
         document.getElementById('taxRate').value = u.tax_rate || 0;
-        // Set the Tax PIN display in the header
         document.getElementById('taxPinDisplay').innerText = u.company_tax_pin ? `Tax PIN: ${u.company_tax_pin}` : 'Tax PIN: Not set';
     } catch (e) { console.error(e); }
 }
@@ -775,8 +793,8 @@ function addNewRow() {
     const row = tbody.insertRow();
     const today = new Date().toISOString().split('T')[0];
     row.innerHTML = `
-        <tr><input type="text" class="item-description" placeholder="Item description"></td>
-        <tr><input type="date" class="date-issued" value="${today}"></td>
+        <td><input type="text" class="item-description" placeholder="Item description"></td>
+        <td><input type="date" class="date-issued" value="${today}"></td>
         <td><input type="number" step="0.01" min="0" class="cost-per-day" value="0"></td>
         <td><input type="number" min="1" class="days-issued" value="1"></td>
         <td><input type="number" class="total-cost readonly" readonly value="0"></td>
@@ -893,17 +911,17 @@ async function createClientCopy() {
 function convertToYYYYMMDD(dateStr) {
     if (!dateStr) return '';
     dateStr = dateStr.toString().trim();
-    
+
     // Already YYYY-MM-DD
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-    
+
     // Try to parse as MM/DD/YYYY or MM-DD-YYYY
     let match = dateStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})$/);
     if (match) {
         // Assume MM/DD/YYYY format
         return `${match[3]}-${match[1].padStart(2, '0')}-${match[2].padStart(2, '0')}`;
     }
-    
+
     return dateStr;
 }
 
@@ -979,46 +997,46 @@ async function handleFileSelect(input) {
         const tbody = document.getElementById('rentalTableBody');
         tbody.innerHTML = '';
         let importedCount = 0;
-        
+
         for (let i = 0; i < dataRows.length; i++) {
             const rowData = dataRows[i];
             if (rowData.length < 5) continue;
-            
+
             addNewRow();
             const row = tbody.lastChild;
-            
+
             // Description - column 0
             if (rowData[0]) {
                 row.querySelector('.item-description').value = rowData[0];
             }
-            
+
             // Date - column 1 (convert MM/DD/YYYY to YYYY-MM-DD)
             if (rowData[1]) {
                 const convertedDate = convertToYYYYMMDD(rowData[1]);
                 row.querySelector('.date-issued').value = convertedDate;
                 console.log(`Date conversion: ${rowData[1]} -> ${convertedDate}`);
             }
-            
+
             // Cost - column 2
             if (rowData[2]) {
                 row.querySelector('.cost-per-day').value = parseFloat(rowData[2]) || 0;
             }
-            
+
             // Quantity - column 3
             if (rowData[3]) {
                 row.querySelector('.days-issued').value = parseInt(rowData[3]) || 1;
             }
-            
+
             // Amount Paid - column 4
             if (rowData[4]) {
                 row.querySelector('.amount-paid').value = parseFloat(rowData[4]) || 0;
             }
-            
+
             calculateRow(row);
             importedCount++;
         }
         calculateAll();
-        
+
         try {
             await saveCurrentClient(false);
             showSaveIndicator(`Imported ${importedCount} items and saved.`);
@@ -1027,7 +1045,7 @@ async function handleFileSelect(input) {
             alert('Error saving imported items: ' + err.message);
         }
     };
-    
+
     if (file.name.endsWith('.csv')) {
         reader.readAsText(file, 'UTF-8');
     } else {
@@ -1112,3 +1130,4 @@ if (token) {
 </script>
 </body>
 </html>
+

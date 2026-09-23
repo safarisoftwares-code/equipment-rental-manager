@@ -4,29 +4,61 @@ import sqlite3
 import bcrypt
 import jwt
 import datetime
+import logging
 from urllib.parse import urlparse
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from dotenv import load_dotenv
 
+# Load .env for local development (ignored on Render where env vars are set in dashboard)
+load_dotenv()
+
+# ==================== Logging ====================
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.StreamHandler(sys.stderr)]
+)
+logger = logging.getLogger(__name__)
+
+# ==================== App setup ====================
 app = Flask(__name__, static_folder='static')
-CORS(app)
-SECRET_KEY = os.environ.get('JWT_SECRET', 'your-secret-key-change-this')
 
+# --- CORS: restrict to known origins ---
+ALLOWED_ORIGINS = [
+    'https://equipment-rental.onrender.com',
+    'https://equipment-rental-manager-ipfd.onrender.com',
+]
+# Also allow any onrender.com subdomain that starts with equipment-rental
+CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=True)
+
+# --- JWT Secret (must be set in production) ---
+SECRET_KEY = os.environ.get('JWT_SECRET')
+IS_RENDER = bool(os.environ.get('DATABASE_URL'))
+
+if not SECRET_KEY:
+    if IS_RENDER:
+        logger.error("FATAL: JWT_SECRET environment variable is not set on Render.")
+        raise RuntimeError("JWT_SECRET must be set in production")
+    else:
+        SECRET_KEY = 'local-dev-only-secret-change-me'
+        logger.warning("Using local dev JWT secret (OK for local testing only)")
+
+# ==================== Database ====================
 DATABASE_URL = os.environ.get('DATABASE_URL')
-IS_RENDER = bool(DATABASE_URL)
 
 if IS_RENDER:
     import pg8000
     def get_db():
-        # Parse DATABASE_URL (postgresql://user:pass@host:port/dbname)
         url = urlparse(DATABASE_URL)
         conn_params = {
             'user': url.username,
             'password': url.password,
             'host': url.hostname,
             'port': url.port or 5432,
-            'database': url.path[1:] if url.path else 'postgres'
+            'database': url.path[1:] if url.path else 'postgres',
+            'ssl_context': True,
         }
         return pg8000.connect(**conn_params)
 else:
@@ -39,8 +71,14 @@ else:
 
 if IS_RENDER:
     def row_to_dict(cursor, row):
+        if row is None:
+            return None
         return {cursor.description[i][0]: row[i] for i in range(len(row))}
+else:
+    def row_to_dict(cursor, row):
+        return dict(row) if row else None
 
+# ==================== Init DB ====================
 def init_db():
     conn = get_db()
     if IS_RENDER:
@@ -145,7 +183,7 @@ def create_default_admin():
     admin_email = os.environ.get('ADMIN_EMAIL')
     admin_password = os.environ.get('ADMIN_PASSWORD')
     if not admin_email or not admin_password:
-        print("ADMIN_EMAIL or ADMIN_PASSWORD not set", file=sys.stderr)
+        logger.info("ADMIN_EMAIL or ADMIN_PASSWORD not set — skipping default admin creation")
         return
     conn = get_db()
     try:
@@ -160,7 +198,7 @@ def create_default_admin():
                     (admin_email, hashed.decode('utf-8'), 'System Admin', 'admin', 1)
                 )
                 conn.commit()
-                print(f"Default admin created for {admin_email}", file=sys.stderr)
+                logger.info(f"Default admin created for {admin_email}")
             else:
                 cur.execute("UPDATE users SET role = 'admin' WHERE email = %s AND role != 'admin'", (admin_email,))
                 conn.commit()
@@ -174,18 +212,19 @@ def create_default_admin():
                     (admin_email, hashed.decode('utf-8'), 'System Admin', 'admin', 1)
                 )
                 conn.commit()
-                print(f"Default admin created for {admin_email}", file=sys.stderr)
+                logger.info(f"Default admin created for {admin_email}")
             else:
                 conn.execute("UPDATE users SET role = 'admin' WHERE email = ? AND role != 'admin'", (admin_email,))
                 conn.commit()
     except Exception as e:
-        print(f"Error creating default admin: {e}", file=sys.stderr)
+        logger.error(f"Error creating default admin: {e}")
     finally:
         conn.close()
 
 init_db()
 create_default_admin()
 
+# ==================== Decorators ====================
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -196,18 +235,20 @@ def token_required(f):
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
             current_user_id = data['userId']
-        except:
+        except Exception:
             return jsonify({'error': 'Invalid token'}), 401
         conn = get_db()
-        if IS_RENDER:
-            cur = conn.cursor()
-            cur.execute("SELECT id, is_active, role FROM users WHERE id = %s", (current_user_id,))
-            row = cur.fetchone()
-            user = row_to_dict(cur, row) if row else None
-        else:
-            cur = conn.execute("SELECT id, is_active, role FROM users WHERE id = ?", (current_user_id,))
-            user = cur.fetchone()
-        conn.close()
+        try:
+            if IS_RENDER:
+                cur = conn.cursor()
+                cur.execute("SELECT id, is_active, role FROM users WHERE id = %s", (current_user_id,))
+                row = cur.fetchone()
+                user = row_to_dict(cur, row)
+            else:
+                cur = conn.execute("SELECT id, is_active, role FROM users WHERE id = ?", (current_user_id,))
+                user = cur.fetchone()
+        finally:
+            conn.close()
         if not user:
             return jsonify({'error': 'User not found'}), 401
         if user['is_active'] == 0:
@@ -219,20 +260,23 @@ def admin_required(f):
     @wraps(f)
     def decorated(current_user_id, *args, **kwargs):
         conn = get_db()
-        if IS_RENDER:
-            cur = conn.cursor()
-            cur.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
-            row = cur.fetchone()
-            user = row_to_dict(cur, row) if row else None
-        else:
-            cur = conn.execute("SELECT role FROM users WHERE id = ?", (current_user_id,))
-            user = cur.fetchone()
-        conn.close()
+        try:
+            if IS_RENDER:
+                cur = conn.cursor()
+                cur.execute("SELECT role FROM users WHERE id = %s", (current_user_id,))
+                row = cur.fetchone()
+                user = row_to_dict(cur, row)
+            else:
+                cur = conn.execute("SELECT role FROM users WHERE id = ?", (current_user_id,))
+                user = cur.fetchone()
+        finally:
+            conn.close()
         if not user or user['role'] != 'admin':
             return jsonify({'error': 'Admin access required'}), 403
         return f(current_user_id, *args, **kwargs)
     return decorated
 
+# ==================== Health + Static ====================
 @app.route('/health', methods=['GET'])
 def health():
     try:
@@ -248,6 +292,21 @@ def health():
     except Exception as e:
         return jsonify({'status': 'error', 'error': str(e)}), 500
 
+@app.route('/robots.txt')
+def robots():
+    return "User-agent: *\nAllow: /\nSitemap: /sitemap.xml\n", 200, {'Content-Type': 'text/plain'}
+
+@app.route('/favicon.ico')
+def favicon():
+    # Simple inline SVG favicon (blue hard hat)
+    svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+    <rect width="64" height="64" rx="12" fill="#1e40af"/>
+    <path d="M32 12 L16 28 L16 48 L48 48 L48 28 Z" fill="#fbbf24"/>
+    <rect x="24" y="20" width="16" height="8" fill="#1e40af"/>
+    </svg>'''
+    return svg, 200, {'Content-Type': 'image/svg+xml'}
+
+# ==================== Auth ====================
 @app.route('/api/auth/register', methods=['POST'])
 def register():
     data = request.json
@@ -294,7 +353,7 @@ def login():
             cur = conn.cursor()
             cur.execute("SELECT * FROM users WHERE email = %s", (email,))
             row = cur.fetchone()
-            user = row_to_dict(cur, row) if row else None
+            user = row_to_dict(cur, row)
         else:
             cur = conn.execute("SELECT * FROM users WHERE email = ?", (email,))
             user = cur.fetchone()
@@ -308,16 +367,10 @@ def login():
         return jsonify({
             'token': token,
             'user': {
-                'id': user['id'],
-                'email': user['email'],
-                'name': user['name'],
-                'role': user['role'],
-                'company_name': user['company_name'],
-                'company_phone': user['company_phone'],
-                'company_tax_pin': user['company_tax_pin'],
-                'company_address': user['company_address'],
-                'company_email': user['company_email'],
-                'signature_name': user['signature_name'],
+                'id': user['id'], 'email': user['email'], 'name': user['name'], 'role': user['role'],
+                'company_name': user['company_name'], 'company_phone': user['company_phone'],
+                'company_tax_pin': user['company_tax_pin'], 'company_address': user['company_address'],
+                'company_email': user['company_email'], 'signature_name': user['signature_name'],
                 'tax_rate': user['tax_rate']
             }
         })
@@ -333,7 +386,7 @@ def verify(current_user_id):
             cur = conn.cursor()
             cur.execute("SELECT id, email, name, role, company_name, company_phone, company_tax_pin, company_address, company_email, signature_name, tax_rate FROM users WHERE id = %s", (current_user_id,))
             row = cur.fetchone()
-            user = row_to_dict(cur, row) if row else None
+            user = row_to_dict(cur, row)
         else:
             cur = conn.execute("SELECT id, email, name, role, company_name, company_phone, company_tax_pin, company_address, company_email, signature_name, tax_rate FROM users WHERE id = ?", (current_user_id,))
             user = cur.fetchone()
@@ -355,7 +408,7 @@ def change_password(current_user_id):
             cur = conn.cursor()
             cur.execute("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
             row = cur.fetchone()
-            user = row_to_dict(cur, row) if row else None
+            user = row_to_dict(cur, row)
         else:
             cur = conn.execute("SELECT password_hash FROM users WHERE id = ?", (current_user_id,))
             user = cur.fetchone()
@@ -373,6 +426,7 @@ def change_password(current_user_id):
     finally:
         conn.close()
 
+# ==================== Admin ====================
 @app.route('/api/admin/users', methods=['GET'])
 @token_required
 @admin_required
@@ -449,6 +503,7 @@ def activate_user(current_user_id, user_id):
     finally:
         conn.close()
 
+# ==================== Company ====================
 @app.route('/api/company', methods=['PUT'])
 @token_required
 def update_company(current_user_id):
@@ -468,14 +523,9 @@ def update_company(current_user_id):
                     tax_rate = COALESCE(%s, tax_rate)
                 WHERE id = %s
             ''', (
-                data.get('company_name'),
-                data.get('company_phone'),
-                data.get('company_tax_pin'),
-                data.get('company_address'),
-                data.get('company_email'),
-                data.get('signature_name'),
-                data.get('tax_rate'),
-                current_user_id
+                data.get('company_name'), data.get('company_phone'), data.get('company_tax_pin'),
+                data.get('company_address'), data.get('company_email'), data.get('signature_name'),
+                data.get('tax_rate'), current_user_id
             ))
             conn.commit()
         else:
@@ -490,20 +540,16 @@ def update_company(current_user_id):
                     tax_rate = COALESCE(?, tax_rate)
                 WHERE id = ?
             ''', (
-                data.get('company_name'),
-                data.get('company_phone'),
-                data.get('company_tax_pin'),
-                data.get('company_address'),
-                data.get('company_email'),
-                data.get('signature_name'),
-                data.get('tax_rate'),
-                current_user_id
+                data.get('company_name'), data.get('company_phone'), data.get('company_tax_pin'),
+                data.get('company_address'), data.get('company_email'), data.get('signature_name'),
+                data.get('tax_rate'), current_user_id
             ))
             conn.commit()
         return jsonify({'success': True})
     finally:
         conn.close()
 
+# ==================== Clients ====================
 @app.route('/api/clients', methods=['GET'])
 @token_required
 def get_clients(current_user_id):
@@ -690,6 +736,7 @@ def bulk_update_items(current_user_id, client_id):
     finally:
         conn.close()
 
+# ==================== Tax History ====================
 @app.route('/api/tax-history', methods=['GET'])
 @token_required
 def tax_history(current_user_id):
@@ -732,6 +779,7 @@ def reset_testing_data(current_user_id):
     finally:
         conn.close()
 
+# ==================== Export / Import ====================
 @app.route('/api/export-data', methods=['GET'])
 @token_required
 def export_data(current_user_id):
@@ -741,7 +789,7 @@ def export_data(current_user_id):
             cur = conn.cursor()
             cur.execute("SELECT id, email, name, company_name, company_phone, company_tax_pin, company_address, company_email, signature_name, tax_rate FROM users WHERE id = %s", (current_user_id,))
             row = cur.fetchone()
-            user = row_to_dict(cur, row) if row else None
+            user = row_to_dict(cur, row)
             cur.execute("SELECT * FROM clients WHERE user_id = %s", (current_user_id,))
             clients_rows = cur.fetchall()
             clients = [row_to_dict(cur, r) for r in clients_rows]
@@ -805,6 +853,19 @@ def import_data(current_user_id):
     finally:
         conn.close()
 
+# ==================== Error Handlers ====================
+@app.errorhandler(404)
+def not_found(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Endpoint not found'}), 404
+    return send_from_directory('static', 'index.html')
+
+@app.errorhandler(500)
+def server_error(e):
+    logger.error(f"500 error: {e}")
+    return jsonify({'error': 'Internal server error'}), 500
+
+# ==================== Static Routes ====================
 @app.route('/')
 def index():
     return send_from_directory('static', 'index.html')
@@ -813,5 +874,6 @@ def index():
 def static_files(path):
     return send_from_directory('static', path)
 
+# ==================== Main ====================
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3443, debug=False)
