@@ -187,11 +187,16 @@
             table { min-width: 750px; }
             th, td { font-size: 0.75rem; padding: 6px 6px; }
             #rentalTable td input { padding: 6px 4px; font-size: 12px; }
-            .company-details { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; margin-top: 10px; }
-            .detail-item:nth-child(1) { order: 1; }
-            .detail-item:nth-child(3) { order: 2; }
-            .detail-item:nth-child(2) { order: 3; }
-            .detail-item { background: rgba(255,255,255,0.15); border-radius: 40px; padding: 4px 12px; font-size: 0.85rem; width: auto; }
+
+            /* ===== CLEAN MOBILE HEADER — excavator above, Renta below ===== */
+            .header { padding: 16px 12px; }
+            .header > div:first-child {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+            .header-logo { height: 56px !important; width: 56px !important; }
+            .company-name { font-size: 24px !important; }
+            .company-details { display: none !important; }
         }
 
         @media print {
@@ -221,13 +226,237 @@
         @media (max-width: 768px) {
             .header-logo { height: 44px; width: 44px; }
         }
+
+        /* ===== GOLD THEME — HOME PAGE ===== */
+        body {
+            background:
+                radial-gradient(circle at 20% 10%, rgba(212,175,55,0.10) 0%, transparent 45%),
+                radial-gradient(circle at 80% 90%, rgba(212,175,55,0.08) 0%, transparent 45%),
+                linear-gradient(135deg, #1f2b3a, #2c3e50, #1a2a3a) !important;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 55%, #3b6bb8 100%) !important;
+            border-bottom: 3px solid #d4af37 !important;
+            box-shadow: 0 4px 24px rgba(212,175,55,0.25), inset 0 -1px 0 rgba(255,255,255,0.15) !important;
+            position: relative;
+        }
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -3px; left: 15%; right: 15%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, #fbbf24 30%, #fff5c2 50%, #fbbf24 70%, transparent 100%);
+            border-radius: 2px;
+        }
+        .detail-item {
+            background: rgba(255,255,255,0.12) !important;
+            border: 1px solid rgba(212,175,55,0.35) !important;
+            color: #fef9e3 !important;
+        }
+
+        .company-setup {
+            background: linear-gradient(180deg, #fffef9 0%, #fdf6e3 100%) !important;
+            border-bottom: 2px solid rgba(212,175,55,0.35) !important;
+        }
+        .setup-header h3 { color: #7a5c1a !important; }
+        .setup-toggle {
+            background: linear-gradient(180deg, #d4af37, #a67c00) !important;
+            color: #ffffff !important;
+            box-shadow: 0 2px 8px rgba(212,175,55,0.35) !important;
+        }
+        .setup-input {
+            border: 2px solid #e2c975 !important;
+            background: #ffffff !important;
+        }
+        .setup-input:focus {
+            border-color: #a67c00 !important;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.25) !important;
+            outline: none !important;
+        }
+
+        .client-management {
+            background: linear-gradient(180deg, #fef9e3 0%, #fdf3d0 100%) !important;
+            border: 1px solid rgba(212,175,55,0.35) !important;
+            box-shadow: 0 2px 10px rgba(212,175,55,0.10) !important;
+        }
+        .client-dropdown {
+            border: 2px solid #d4af37 !important;
+            background: #ffffff !important;
+        }
+        .client-dropdown:focus {
+            border-color: #a67c00 !important;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.25) !important;
+            outline: none !important;
+        }
+
+        .client-info-section {
+            background: linear-gradient(180deg, #ffffff 0%, #fffef9 100%) !important;
+            border: 1px solid rgba(212,175,55,0.25) !important;
+        }
+        .underline-input {
+            border-bottom: 2px solid #d4af37 !important;
+        }
+        .underline-input:focus {
+            border-bottom-color: #a67c00 !important;
+            outline: none !important;
+        }
+        .client-field label { color: #7a5c1a !important; }
+
+        .import-export-section {
+            background: linear-gradient(180deg, #fef9e3 0%, #fdf3d0 100%) !important;
+            border: 1px dashed #d4af37 !important;
+        }
+        .import-section h5, .export-section h5 { color: #7a5c1a !important; }
+
+        th {
+            background: linear-gradient(180deg, #b8860b 0%, #8b6508 100%) !important;
+            color: #fff8e1 !important;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+            border-bottom: 2px solid #d4af37 !important;
+        }
+        tr:hover td { background: #fdf6e3 !important; }
+        .total-row { background: linear-gradient(180deg, #fdf6e3, #f7e9c4) !important; }
+        .total-row td { color: #7a5c1a !important; font-weight: 800 !important; }
+
+        .current-client-display {
+            background: linear-gradient(180deg, #fef9e3, #fdf3d0) !important;
+            color: #7a5c1a !important;
+            border: 1px solid rgba(212,175,55,0.35) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, #3b82f6, #2563eb) !important;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.30) !important;
+        }
+        .btn-secondary {
+            background: linear-gradient(180deg, #d4af37, #a67c00) !important;
+            box-shadow: 0 2px 8px rgba(212,175,55,0.35) !important;
+            color: #ffffff !important;
+        }
+        .btn-outline {
+            background: #ffffff !important;
+            color: #a67c00 !important;
+            border: 2px solid #d4af37 !important;
+        }
+        .btn-outline:hover {
+            background: #fdf6e3 !important;
+        }
+
+        .comment-section {
+            background: linear-gradient(180deg, #fef9e3, #fdf3d0) !important;
+            border-left: 4px solid #d4af37 !important;
+        }
+
+        .signature-area {
+            background: linear-gradient(180deg, #fef9e3 0%, #ffffff 100%) !important;
+            border: 1px solid rgba(212,175,55,0.25) !important;
+        }
+        .signature-line {
+            border-bottom: 2px solid #d4af37 !important;
+        }
+
+        /* ===== SHINY GOLD FOOTER ===== */
+        .footer {
+            background: linear-gradient(135deg, #0f172a 0%, #1a2440 40%, #0f172a 100%) !important;
+            color: #e2e8f0 !important;
+            border-top: 3px solid #d4af37 !important;
+            box-shadow: 0 -4px 24px rgba(212,175,55,0.28) !important;
+            position: relative;
+        }
+        .footer::before {
+            content: "";
+            position: absolute;
+            top: -3px; left: 10%; right: 10%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent 0%, #fbbf24 25%, #fff5c2 50%, #fbbf24 75%, transparent 100%);
+            border-radius: 2px;
+        }
+        .footer a { color: #fbbf24 !important; text-decoration: none; }
+        .footer a:hover { color: #fff5c2 !important; text-decoration: underline; }
+        .footer p { color: #fef9e3 !important; font-weight: 600; }
+
+        /* ===== HAMBURGER (mobile only) ===== */
+        .hamburger-btn {
+            display: none;
+            position: fixed;
+            top: 15px; right: 15px;
+            z-index: 1500;
+            background: linear-gradient(180deg, #d4af37, #a67c00);
+            color: #ffffff;
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(212,175,55,0.45);
+        }
+        .hamburger-menu {
+            display: none;
+            position: fixed;
+            top: 72px; right: 15px;
+            z-index: 1500;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.28);
+            min-width: 210px;
+            overflow: hidden;
+            border: 2px solid #d4af37;
+        }
+        .hamburger-menu.open { display: block; }
+        .hamburger-menu a, .hamburger-menu button {
+            display: block;
+            width: 100%;
+            padding: 14px 18px;
+            text-align: left;
+            background: none;
+            border: none;
+            color: #1e293b;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            text-decoration: none;
+        }
+        .hamburger-menu a:hover, .hamburger-menu button:hover {
+            background: #fdf6e3;
+            color: #a67c00;
+        }
+        .hamburger-menu .submenu-item {
+            padding-left: 32px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #64748b;
+        }
+        .hamburger-menu .menu-header {
+            background: linear-gradient(180deg, #1e3c72, #2a5298);
+            color: #fbbf24;
+            padding: 12px 18px;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 768px) {
+            .hamburger-btn { display: flex; align-items: center; justify-content: center; }
+            .update-controls { display: none !important; }
+            .header-logo { height: 56px !important; width: 56px !important; }
+            .company-name { font-size: 24px !important; }
+            .company-details { display: none !important; }
+            .header > div:first-child {
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+        }
 </style>
 </head>
 <body>
 <div id="loginModal" class="modal">
     <div class="modal-content">
         <img src="/static/equips-renta.png" alt="Renta" class="login-logo">
-        <h2>Equipment Rental Manager</h2>
+        <h2>Renta</h2>
         <div id="authError" class="error-msg"></div>
         <input type="email" id="loginEmail" placeholder="Email">
         <div class="password-wrapper">
@@ -367,6 +596,20 @@
         <div>info@safarisoftwares.co.ke | +254112168732</div>
         <div><a href="#" onclick="showPrivacyPolicy()">Privacy Policy</a> | <a href="#" onclick="showTermsOfUse()">Terms of Use</a></div>
     </div>
+
+<button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu">&#9776;</button>
+<div class="hamburger-menu" id="hamburgerMenu">
+    <div class="menu-header">Renta Menu</div>
+    <button id="hAdminBtn" style="display:none;">Admin Dashboard</button>
+    <button id="hChangePwdBtn">Change Password</button>
+    <button id="hInstallBtn" style="display:none;">📲 Install App</button>
+    <button id="hUpdateBtn">Update Data</button>
+    <a class="submenu-item" id="hExportMaster" href="javascript:void(0)">↳ Export Master DB</a>
+    <a class="submenu-item" id="hImportClients" href="javascript:void(0)">↳ Import Client Updates</a>
+    <a class="submenu-item" id="hCreateCopy" href="javascript:void(0)">↳ Create Client Copy</a>
+    <a class="submenu-item" id="hBackupAll" href="javascript:void(0)">↳ Backup All Data</a>
+    <button id="hLogoutBtn" style="color:#dc2626;">Logout</button>
+</div>
 </div>
 
 <script>
@@ -443,7 +686,7 @@ document.getElementById('loginBtn').onclick = async () => {
         document.getElementById('loginModal').style.display = 'none';
         document.getElementById('mainApp').style.display = 'block';
         await loadCompanyFromUser(); await loadClientDropdown(); clearForm();
-        if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex';
+        if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex'; var hA=document.getElementById('hAdminBtn'); if(hA) hA.style.display='block';
     } catch (err) { errorDiv.innerText = err.message; }
 };
 
@@ -459,7 +702,7 @@ document.getElementById('showRegister').onclick = async () => {
             document.getElementById('loginModal').style.display = 'none';
             document.getElementById('mainApp').style.display = 'block';
             loadCompanyFromUser(); loadClientDropdown(); clearForm();
-            if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex';
+            if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex'; var hA=document.getElementById('hAdminBtn'); if(hA) hA.style.display='block';
         } else alert('Registration failed');
     } catch (err) { alert(err.message); }
 };
@@ -1080,7 +1323,7 @@ if (token) {
         })
         .then(data => {
             currentUserRole = data.user.role;
-            if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex';
+            if (currentUserRole === 'admin') document.getElementById('adminDashboardBtn').style.display = 'inline-flex'; var hA=document.getElementById('hAdminBtn'); if(hA) hA.style.display='block';
         })
         .catch(() => {
             localStorage.removeItem('token'); token = null;
@@ -1099,7 +1342,7 @@ const installBtn = document.getElementById('installBtn');
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    if (installBtn) installBtn.style.display = 'inline-flex';
+    if (installBtn) installBtn.style.display = 'inline-flex'; var hI=document.getElementById('hInstallBtn'); if(hI) hI.style.display='block';
 });
 
 if (installBtn) {
@@ -1121,6 +1364,54 @@ window.addEventListener('appinstalled', () => {
     if (installBtn) installBtn.style.display = 'none';
     console.log('Renta installed as app');
 });
+
+
+// ===== Hamburger menu =====
+(function() {
+    const btn = document.getElementById('hamburgerBtn');
+    const menu = document.getElementById('hamburgerMenu');
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.toggle('open');
+    });
+    document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target) && e.target !== btn) menu.classList.remove('open');
+    });
+
+    // Wire up hamburger items to existing functions/buttons
+    const map = [
+        ['hAdminBtn', 'adminDashboardBtn'],
+        ['hChangePwdBtn', 'changePasswordBtn'],
+        ['hInstallBtn', 'installBtn'],
+        ['hLogoutBtn', 'logoutBtn'],
+    ];
+    map.forEach(([hId, srcId]) => {
+        const hEl = document.getElementById(hId);
+        const srcEl = document.getElementById(srcId);
+        if (hEl && srcEl) {
+            hEl.addEventListener('click', () => {
+                srcEl.click();
+                menu.classList.remove('open');
+            });
+        }
+    });
+
+    // Submenu links
+    const links = {
+        hExportMaster: exportToMaster,
+        hImportClients: importFromClients,
+        hCreateCopy: createClientCopy,
+        hBackupAll: backupAllData,
+    };
+    Object.entries(links).forEach(([id, fn]) => {
+        const el = document.getElementById(id);
+        if (el && typeof fn === 'function') {
+            el.addEventListener('click', () => { fn(); menu.classList.remove('open'); });
+        }
+    });
+})();
 
 </script>
 </body>
