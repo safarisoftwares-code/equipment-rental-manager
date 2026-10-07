@@ -748,7 +748,7 @@
     <div class="menu-header">Renta Menu</div>
     <button id="hAdminBtn" style="display:none;">Admin Dashboard</button>
     <button id="hChangePwdBtn">Change Password</button>
-    <button id="hInstallBtn" style="display:none;">📲 Install App</button>
+    <button id="hInstallBtn" style="color:#0a7c3a;">📲 Install App</button>
     <button id="hUpdateBtn">Update Data</button>
     <a class="submenu-item" id="hExportMaster" href="javascript:void(0)">↳ Export Master DB</a>
     <a class="submenu-item" id="hImportClients" href="javascript:void(0)">↳ Import Client Updates</a>
@@ -1492,18 +1492,33 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 if (installBtn) {
-    installBtn.addEventListener('click', async () => {
+    function doInstall() {
         if (!deferredPrompt) {
-            alert('To install Renta as an app:\n\nOn Android Chrome: tap the ⋮ menu → Install app\nOn iPhone Safari: tap Share → Add to Home Screen\nOn Desktop Chrome/Edge: look for the install icon in the address bar');
+            alert('To install Renta as an app:\n\nAndroid Chrome: tap the \u22ee menu (top right) then "Install app" or "Add to Home screen"\n\niPhone Safari: tap the Share icon (square with arrow) then "Add to Home Screen"\n\nDesktop Chrome/Edge: click the install icon in the address bar');
             return;
         }
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            installBtn.style.display = 'none';
-        }
-        deferredPrompt = null;
-    });
+        deferredPrompt.userChoice.then(({ outcome }) => {
+            if (outcome === 'accepted') {
+                const b1 = document.getElementById('installBtn');
+                const b2 = document.getElementById('hInstallBtn');
+                if (b1) b1.style.display = 'none';
+                if (b2) b2.style.display = 'none';
+            }
+            deferredPrompt = null;
+        });
+    }
+
+    installBtn.addEventListener('click', doInstall);
+
+    const hInstall = document.getElementById('hInstallBtn');
+    if (hInstall) {
+        hInstall.addEventListener('click', () => {
+            const menu = document.getElementById('hamburgerMenu');
+            if (menu) menu.classList.remove('open');
+            doInstall();
+        });
+    }
 }
 
 window.addEventListener('appinstalled', () => {
