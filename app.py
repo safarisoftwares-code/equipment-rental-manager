@@ -727,5 +727,81 @@ def static_files(path):
     return send_from_directory('static', 'index.html')
 
 
+
+
+# ===== TELEGRAM INTEGRATION =====
+import urllib.request
+import json as _json
+
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '').strip()
+TELEGRAM_WEBHOOK_SECRET = os.environ.get('TELEGRAM_WEBHOOK_SECRET', '').strip()
+
+
+def _tg_api(method, payload=None):
+    """Call Telegram Bot API method. Returns parsed JSON or None."""
+    if not TELEGRAM_BOT_TOKEN:
+        logger.warning("TELEGRAM_BOT_TOKEN not set — skipping Telegram API call")
+        return None
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/{method}"
+    data = _json.dumps(payload or {}).encode('utf-8')
+    req = urllib.request.Request(url, data=data, headers={'Content-Type': 'application/json'})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return _json.loads(resp.read().decode('utf-8'))
+    except Exception as e:
+        logger.error(f"Telegram API error ({method}): {e}")
+        return None
+
+
+@app.route('/webhook', methods=['POST', 'GET'])
+def telegram_webhook():
+    # GET is for manual browser check
+    if request.method == 'GET':
+        return jsonify({'status': 'webhook ready', 'method': 'POST required for Telegram'})
+
+    # Optional secret verification
+    if TELEGRAM_WEBHOOK_SECRET:
+        if request.headers.get('X-Telegram-Bot-Api-Secret-Token') != TELEGRAM_WEBHOOK_SECRET:
+            logger.warning("Telegram webhook: invalid secret token")
+            return "unauthorized", 401
+
+    data = request.get_json(silent=True) or {}
+    logger.info(f"Telegram update: {_json.dumps(data)[:300]}")
+
+    # Handle /start and /chatid — reply with the chat ID
+    message = data.get('message') or {}
+    chat = message.get('chat') or {}
+    chat_id = chat.get('id')
+    text = (message.get('text') or '').strip()
+
+    if chat_id and text in ('/start', '/chatid', '/id'):
+        reply = (
+            f"👋 Hi! Your Chat ID is:\n"
+            f"<code>{chat_id}</code>\n\n"
+            f"Copy this and set it as TELEGRAM_CHAT_ID in your watcher/app config."
+        )
+        _tg_api('sendMessage', {'chat_id': chat_id, 'text': reply, 'parse_mode': 'HTML'})
+
+    return "ok", 200
+
+
+@app.route('/send-alert', methods=['POST'])
+def send_alert():
+    """Watcher calls this to push an alert to Telegram."""
+    data = request.get_json(silent=True) or {}
+    message = data.get('message', '').strip()
+    if not message:
+        return jsonify({'error': 'message is required'}), 400
+
+    chat_id = data.get('chat_id') or os.environ.get('TELEGRAM_CHAT_ID', '').strip()
+    if not chat_id:
+        return jsonify({'error': 'chat_id not provided and TELEGRAM_CHAT_ID not set'}), 400
+
+    result = _tg_api('sendMessage', {'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'})
+    if result and result.get('ok'):
+        return jsonify({'ok': True, 'telegram': result.get('result')})
+    return jsonify({'ok': False, 'error': 'Telegram send failed', 'details': result}), 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3443, debug=False)
